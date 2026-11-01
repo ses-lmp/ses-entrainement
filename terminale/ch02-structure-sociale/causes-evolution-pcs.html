@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attribuer les causes de l'évolution des PCS</title>
+<meta name="chapitre" content="Chapitre 2 : Comment est structurée la société française actuelle ?">
+<meta name="description" content="Pour chaque groupe socioprofessionnel, trouver s'il a progressé ou reculé, puis les causes de cette évolution : salarisation, tertiarisation, qualification, féminisation.">
+<style>
+  :root{
+    --bleu:#2E75B6; --bleufonce:#1F4E79; --vert:#548235; --vertclair:#E2EFDA;
+    --rouge:#C0392B; --rougeclair:#FBE4E2; --gris:#F2F2F2; --grisbord:#D0D0D0;
+    --jaune:#FFF2CC; --def:#DDEBF7; --retenir:#DCE6F1;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#fafbfc;color:#1a1a1a;line-height:1.5}
+  .wrap{max-width:960px;margin:0 auto;padding:16px 16px 60px}
+  .retour{display:inline-block;margin-bottom:10px;color:var(--bleu);text-decoration:none;font-size:.95rem}
+  h1{font-size:1.35rem;color:var(--bleufonce);margin:.2em 0}
+  .sub{color:#555;font-size:.95rem;margin:0 0 12px}
+  .oa{background:var(--def);border-radius:10px;padding:10px 16px;font-size:.92rem;margin-bottom:12px}
+  .consigne{background:var(--jaune);border-radius:10px;padding:12px 16px;font-size:.95rem;margin-bottom:14px}
+  .consigne ol{margin:6px 0 0;padding-left:20px}
+  .causes{position:sticky;top:0;z-index:5;background:#fafbfc;padding:8px 0 10px;display:flex;flex-wrap:wrap;gap:8px;border-bottom:1px solid #e3e3e3;margin-bottom:14px}
+  .hint{width:100%;font-size:.82rem;color:#666}
+  .cause{border:2px solid var(--bleu);color:var(--bleufonce);background:#fff;border-radius:22px;
+    padding:7px 14px;font-size:.9rem;font-weight:bold;cursor:pointer;user-select:none;font-family:inherit}
+  .cause:hover{background:#eaf2fb}
+  .cause.sel{background:var(--bleu);color:#fff;box-shadow:0 2px 8px rgba(46,117,182,.35)}
+  .court{display:none}
+  .alerte{width:100%;font-size:.85rem;color:var(--rouge);min-height:0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{border:2px solid var(--grisbord);border-radius:12px;padding:14px;background:#fff;transition:.15s;cursor:pointer}
+  .card:hover{border-color:var(--bleu)}
+  .card.correct{border-color:var(--vert);background:var(--vertclair)}
+  .card.wrong{border-color:var(--rouge);background:var(--rougeclair)}
+  .pcs-nom{font-weight:bold;color:#222;font-size:.98rem;margin-bottom:8px}
+  .sens{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center}
+  .sens span{font-size:.82rem;color:#555}
+  .sens button{font-family:inherit;font-size:.82rem;font-weight:bold;padding:4px 10px;border-radius:16px;border:1.5px solid #bbb;background:#fff;color:#444;cursor:pointer}
+  .sens button.on.up{background:#e7f0e2;border-color:var(--vert);color:var(--vert)}
+  .sens button.on.down{background:#f6e3e1;border-color:var(--rouge);color:var(--rouge)}
+  .drop{min-height:44px;border:1.5px dashed #c8c8c8;border-radius:8px;padding:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#fff}
+  .drop.empty::before{content:"Ajoute ici la ou les causes…";color:#999;font-size:.82rem;font-style:italic}
+  .tag{background:var(--bleu);color:#fff;border-radius:16px;padding:4px 10px;font-size:.82rem;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .tag .x{font-weight:bold;opacity:.85}
+  .feedback{margin-top:10px;font-size:.88rem}
+  .feedback:empty{display:none}
+  .feedback ul{margin:6px 0 0;padding-left:18px}
+  .feedback li{margin-bottom:4px}
+  .lab{font-weight:bold}
+  .att{color:var(--vert)} .acc{color:var(--bleufonce)} .non{color:var(--rouge)}
+  .bar{display:flex;gap:10px;align-items:center;margin:22px 0 0;flex-wrap:wrap}
+  button.action{border:none;border-radius:10px;padding:11px 20px;font-size:.95rem;font-weight:bold;cursor:pointer;font-family:inherit}
+  .valider{background:var(--vert);color:#fff}
+  .voir{background:#fff;color:var(--bleufonce);border:2px solid var(--bleu)!important}
+  .reset{background:#fff;color:#444;border:1.5px solid var(--grisbord)!important}
+  .score{font-weight:bold;color:var(--bleufonce);font-size:1rem;width:100%}
+  .cache{display:none!important}
+  .retenir{background:var(--retenir);border-radius:10px;padding:12px 16px;margin-top:18px;font-size:.93rem}
+  .retenir h2{margin:0 0 6px;color:var(--bleufonce);font-size:1.05rem}
+  .retenir ul{margin:0;padding-left:20px}
+  footer{margin-top:26px;font-size:.78rem;color:#888}
+  @media(max-width:640px){
+    .grid{grid-template-columns:1fr}
+    .causes{gap:5px;padding:6px 0 7px}
+    .hint{display:none}
+    .cause{padding:4px 10px;font-size:.8rem}
+    .long{display:none} .court{display:inline}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="retour" href="../../index.html">&larr; Tous les exercices</a>
+  <h1>Comment est structurée la société française actuelle ? - OA2</h1>
+  <p class="sub">Comprendre pourquoi certains groupes socioprofessionnels ont progressé et d'autres reculé depuis les années 1950.</p>
+
+  <div class="oa">Objectif d'apprentissage : comprendre les principales évolutions de la structure socioprofessionnelle en France depuis la seconde moitié du XX<sup>e</sup> siècle (salarisation, tertiarisation, élévation du niveau de qualification, féminisation des emplois).</div>
+
+  <div class="consigne">
+    Consigne. Aide-toi des camemberts 1954 / 2023 du cours (Doc 7). Pour chaque groupe :
+    <ol>
+      <li>indique si sa part dans l'emploi a progressé (essor) ou reculé (déclin) ;</li>
+      <li>ajoute la ou les causes qui expliquent cette évolution : touche une cause en haut, puis touche le groupe (sur ordinateur, tu peux aussi la faire glisser). Touche une étiquette posée pour la retirer.</li>
+    </ol>
+    Clique ensuite sur Valider. Tu pourras corriger tes erreurs avant de consulter la correction.
+  </div>
+
+  <div class="causes" id="causes">
+    <span class="hint">Causes disponibles (une même cause peut servir pour plusieurs groupes) :</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="bar">
+    <button class="action valider" id="valider" type="button">Valider</button>
+    <button class="action voir cache" id="voir" type="button">Voir la correction</button>
+    <button class="action reset" id="reset" type="button">Réinitialiser</button>
+    <span class="score" id="score"></span>
+  </div>
+
+  <div class="retenir cache" id="retenir">
+    <h2>Ce qu'il faut retenir</h2>
+    <ul>
+      <li>Salarisation : la part des salariés dans l'emploi augmente, celle des indépendants (agriculteurs, artisans, commerçants) recule.</li>
+      <li>Tertiarisation : les emplois se déplacent de l'agriculture et de l'industrie vers les services, ce qui fait reculer agriculteurs et ouvriers et progresser employés, professions intermédiaires et cadres.</li>
+      <li>Élévation du niveau de qualification : les emplois qualifiés (cadres, professions intermédiaires) progressent, les emplois peu qualifiés, notamment ouvriers, reculent.</li>
+      <li>Féminisation des emplois : l'entrée massive des femmes dans l'emploi salarié s'est faite surtout dans les services, d'abord comme employées.</li>
+      <li>Une évolution a souvent plusieurs causes, et ces causes se combinent.</li>
+    </ul>
+  </div>
+
+  <footer>
+    Sources des données du chapitre : INSEE (enquêtes Emploi, recensements). Exercice auto-corrigé : aucune donnée n'est enregistrée.
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var CAUSES = [
+  {id:"sal", label:"Salarisation", court:"Salarisation"},
+  {id:"ter", label:"Tertiarisation", court:"Tertiarisation"},
+  {id:"qua", label:"Élévation de la qualification", court:"Qualification"},
+  {id:"fem", label:"Féminisation", court:"Féminisation"}
+];
+// Pour chaque groupe : sens attendu, et pour chaque cause son statut
+// att = attendue (obligatoire), acc = acceptée (ne pénalise pas), non = ne convient pas
+var PCS = [
+  {nom:"Agriculteurs exploitants", dir:"down", c:{
+    sal:["att","Les agriculteurs sont des indépendants. Quand l'emploi devient massivement salarié, leur part recule."],
+    ter:["att","Les gains de productivité agricole libèrent de la main-d'œuvre, qui quitte l'agriculture pour les emplois des services (exode rural)."],
+    qua:["non","La qualification n'explique pas le recul des agriculteurs : c'est le déplacement des emplois hors de l'agriculture qui l'explique."],
+    fem:["non","La féminisation concerne surtout les emplois salariés des services, elle n'explique pas le recul des agriculteurs."]}},
+  {nom:"Artisans, commerçants, chefs d'entreprise", dir:"down", c:{
+    sal:["att","Ce sont des indépendants. La concurrence des grandes entreprises et de la grande distribution, qui emploient des salariés, fait reculer les petits indépendants."],
+    ter:["non","Le commerce est une activité de services : la tertiarisation n'explique pas leur recul. C'est le remplacement des indépendants par des salariés qui l'explique."],
+    qua:["non","La qualification n'est pas la cause principale du recul des petits indépendants."],
+    fem:["non","La féminisation n'explique pas le recul de ce groupe."]}},
+  {nom:"Cadres et professions intellectuelles supérieures", dir:"up", c:{
+    ter:["att","Les services à forte valeur ajoutée (conseil, finance, recherche, enseignement, santé) emploient beaucoup de cadres."],
+    qua:["att","La hausse du niveau de diplôme et les besoins des entreprises en emplois qualifiés font progresser les cadres."],
+    sal:["acc","Accepté : les cadres sont très majoritairement salariés, la salarisation accompagne donc leur essor. Mais ce n'est pas la cause principale."],
+    fem:["acc","Accepté : les femmes sont de plus en plus nombreuses parmi les cadres. Mais elles restent moins présentes que les hommes dans ce groupe, ce n'est pas la cause principale."]}},
+  {nom:"Professions intermédiaires", dir:"up", c:{
+    ter:["att","Santé, enseignement, travail social, encadrement intermédiaire : ces métiers des services se développent fortement."],
+    qua:["att","Ces emplois demandent un niveau de qualification de plus en plus élevé (bac + 2, bac + 3)."],
+    sal:["acc","Accepté : ce groupe est presque entièrement salarié. Mais ce n'est pas la cause principale."],
+    fem:["acc","Accepté : la féminisation a nourri l'essor de ce groupe (professions de santé, enseignement, social)."]}},
+  {nom:"Employés", dir:"up", c:{
+    ter:["att","Les employés travaillent surtout dans les services : commerce, administration, services aux particuliers. Leur part a fortement progressé jusqu'aux années 1980 ; depuis, elle est à peu près stable."],
+    fem:["att","L'entrée massive des femmes dans l'emploi s'est faite surtout dans les métiers d'employés : aujourd'hui, environ trois employés sur quatre sont des femmes."],
+    sal:["acc","Accepté : les employés sont salariés, la salarisation accompagne leur essor. Mais ce n'est pas la cause principale."],
+    qua:["non","L'élévation de la qualification fait surtout progresser les cadres et les professions intermédiaires ; beaucoup d'emplois d'employés sont peu qualifiés."]}},
+  {nom:"Ouvriers", dir:"down", c:{
+    ter:["att","La désindustrialisation déplace les emplois de l'industrie vers les services : la part des ouvriers dans l'emploi recule."],
+    qua:["att","L'automatisation supprime surtout des emplois peu qualifiés, et les emplois se déplacent vers des postes plus qualifiés."],
+    sal:["non","Les ouvriers sont déjà des salariés : la salarisation n'explique pas leur recul."],
+    fem:["non","Le groupe ouvrier reste très masculin (environ quatre ouvriers sur cinq sont des hommes) : la féminisation n'explique pas son recul."]}}
+];
+function label(id){ for(var i=0;i<CAUSES.length;i++) if(CAUSES[i].id===id) return CAUSES[i].label; }
+
+var selected=null;
+var state=PCS.map(function(){ return {dir:null, causes:[]}; });
+var tentative=false;
+
+// Barre des causes
+var causesEl=document.getElementById("causes");
+CAUSES.forEach(function(c){
+  var b=document.createElement("button");
+  b.type="button"; b.className="cause"; b.dataset.id=c.id; b.draggable=true;
+  b.innerHTML='<span class="long">'+c.label+'</span><span class="court">'+c.court+'</span>';
+  b.addEventListener("click",function(){
+    if(selected===c.id){ selected=null; b.classList.remove("sel"); }
+    else { selected=c.id; document.querySelectorAll(".cause").forEach(function(x){x.classList.remove("sel");}); b.classList.add("sel"); }
+    alerte("");
+  });
+  b.addEventListener("dragstart",function(e){ e.dataTransfer.setData("text/plain",c.id); });
+  causesEl.appendChild(b);
+});
+var al=document.createElement("span"); al.className="alerte"; al.id="alerte"; causesEl.appendChild(al);
+function alerte(t){ al.textContent=t; }
+
+// Cartes
+var grid=document.getElementById("grid");
+PCS.forEach(function(p,i){
+  var card=document.createElement("div");
+  card.className="card";
+  card.innerHTML='<div class="pcs-nom">'+p.nom+'</div>'+
+    '<div class="sens"><span>Évolution :</span>'+
+    '<button type="button" class="up" data-d="up">&uarr; Essor</button>'+
+    '<button type="button" class="down" data-d="down">&darr; Déclin</button></div>'+
+    '<div class="drop empty"></div><div class="feedback"></div>';
+  card.querySelectorAll(".sens button").forEach(function(btn){
+    btn.addEventListener("click",function(e){ e.stopPropagation(); state[i].dir=btn.dataset.d; render(i); });
+  });
+  card.addEventListener("click",function(e){
+    if(e.target.closest(".tag")||e.target.closest(".sens")) return;
+    if(selected) addCause(i,selected);
+    else alerte("Choisis d'abord une cause dans la barre ci-dessus.");
+  });
+  var drop=card.querySelector(".drop");
+  drop.addEventListener("dragover",function(e){ e.preventDefault(); });
+  drop.addEventListener("drop",function(e){ e.preventDefault(); addCause(i,e.dataTransfer.getData("text/plain")); });
+  grid.appendChild(card);
+});
+
+function addCause(i,id){ if(!id||state[i].causes.indexOf(id)>=0) return; state[i].causes.push(id); render(i); }
+function removeCause(i,id){ state[i].causes=state[i].causes.filter(function(x){return x!==id;}); render(i); }
+
+function render(i){
+  var card=grid.children[i], drop=card.querySelector(".drop");
+  card.querySelectorAll(".sens button").forEach(function(b){ b.classList.toggle("on", b.dataset.d===state[i].dir); });
+  drop.innerHTML="";
+  drop.classList.toggle("empty",state[i].causes.length===0);
+  state[i].causes.forEach(function(id){
+    var t=document.createElement("span");
+    t.className="tag"; t.innerHTML=label(id)+' <span class="x">&#10005;</span>';
+    t.addEventListener("click",function(ev){ ev.stopPropagation(); removeCause(i,id); });
+    drop.appendChild(t);
+  });
+  card.classList.remove("correct","wrong");
+  card.querySelector(".feedback").innerHTML="";
+}
+
+function evaluer(i){
+  var p=PCS[i], s=state[i];
+  var manquantes=Object.keys(p.c).filter(function(k){ return p.c[k][0]==="att" && s.causes.indexOf(k)<0; });
+  var intruses=s.causes.filter(function(k){ return p.c[k][0]==="non"; });
+  var sensOk=s.dir===p.dir;
+  return {ok: sensOk && manquantes.length===0 && intruses.length===0, sensOk:sensOk, manquantes:manquantes, intruses:intruses};
+}
+
+document.getElementById("valider").addEventListener("click",function(){
+  var ok=0;
+  PCS.forEach(function(p,i){
+    var r=evaluer(i), card=grid.children[i];
+    card.classList.remove("correct","wrong"); card.classList.add(r.ok?"correct":"wrong");
+    if(r.ok) ok++;
+    var msg=[];
+    if(r.ok) msg.push("Juste.");
+    else {
+      if(!state[i].dir) msg.push("Indique le sens de l'évolution.");
+      else if(!r.sensOk) msg.push("Le sens de l'évolution n'est pas le bon : regarde à nouveau les camemberts.");
+      if(r.manquantes.length) msg.push(r.manquantes.length===1?"Il manque une cause.":"Il manque "+r.manquantes.length+" causes.");
+      if(r.intruses.length) msg.push(r.intruses.length===1?"Une des causes posées ne convient pas.":r.intruses.length+" des causes posées ne conviennent pas.");
+    }
+    card.querySelector(".feedback").innerHTML="<strong>"+msg.join(" ")+"</strong>";
+  });
+  var s=document.getElementById("score");
+  s.textContent="Score : "+ok+" / "+PCS.length+(ok===PCS.length?". Bravo, tout est juste !":". Corrige les groupes en rouge et valide à nouveau, ou consulte la correction.");
+  s.style.color= ok===PCS.length ? "#548235" : "#1F4E79";
+  tentative=true;
+  document.getElementById("voir").classList.remove("cache");
+  if(ok===PCS.length) corriger();
+});
+
+function corriger(){
+  PCS.forEach(function(p,i){
+    var r=evaluer(i), card=grid.children[i];
+    card.classList.remove("correct","wrong"); card.classList.add(r.ok?"correct":"wrong");
+    var html='<strong>'+(r.ok?"Juste.":"Correction.")+' Évolution : '+(p.dir==="up"?"essor":"déclin")+'.</strong><ul>';
+    var ordre=["att","acc","non"];
+    ordre.forEach(function(stat){
+      Object.keys(p.c).forEach(function(k){
+        var st=p.c[k][0]; if(st!==stat) return;
+        var pose=state[i].causes.indexOf(k)>=0;
+        if(st==="non" && !pose) return; // on ne commente une cause fausse que si l'élève l'a posée
+        var etiquette = st==="att" ? '<span class="lab att">'+label(k)+' (attendue'+(pose?"":", tu ne l'as pas mise")+')</span>'
+                      : st==="acc" ? '<span class="lab acc">'+label(k)+' (acceptée'+(pose?"":", facultative")+')</span>'
+                      : '<span class="lab non">'+label(k)+' (ne convient pas)</span>';
+        html+='<li>'+etiquette+' : '+p.c[k][1]+'</li>';
+      });
+    });
+    card.querySelector(".feedback").innerHTML=html+'</ul>';
+  });
+  document.getElementById("retenir").classList.remove("cache");
+}
+document.getElementById("voir").addEventListener("click",function(){ corriger(); grid.scrollIntoView({behavior:"smooth"}); });
+
+document.getElementById("reset").addEventListener("click",function(){
+  state=PCS.map(function(){ return {dir:null, causes:[]}; });
+  selected=null; alerte("");
+  document.querySelectorAll(".cause").forEach(function(x){x.classList.remove("sel");});
+  PCS.forEach(function(_,i){ render(i); });
+  document.getElementById("score").textContent="";
+  document.getElementById("voir").classList.add("cache");
+  document.getElementById("retenir").classList.add("cache");
+});
+
+// Accès pour les tests automatisés
+window.__exo={PCS:PCS, state:function(){return state;}};
+PCS.forEach(function(_,i){ render(i); });
+})();
+</script>
+</body>
+</html>
