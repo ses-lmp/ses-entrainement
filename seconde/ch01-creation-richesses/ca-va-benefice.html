@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculer le CA, la valeur ajoutée et le bénéfice</title>
+<meta name="chapitre" content="Chapitre 1 : Comment crée-t-on des richesses et comment les mesure-t-on ?">
+<meta name="description" content="Générateur d'exercices : chiffre d'affaires, consommations intermédiaires, valeur ajoutée, bénéfice. Situations différentes à chaque tirage, correction détaillée.">
+<style>
+  :root {
+    --bleu-fonce: #1F4E79; --bleu: #2E75B6; --def: #DDEBF7; --corrige: #E2EFDA;
+    --retenir: #DCE6F1; --note: #FFF2CC; --gris: #F2F2F2; --texte: #222;
+    --vert: #2E7D32; --rouge: #C62828;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: var(--texte); background: #fafafa; line-height: 1.5; }
+  .page { max-width: 860px; margin: 0 auto; padding: 16px 16px 48px; }
+  .retour { display: inline-block; margin-bottom: 12px; color: var(--bleu); text-decoration: none; font-size: 0.95rem; }
+  .retour:hover { text-decoration: underline; }
+  h1 { color: var(--bleu-fonce); font-size: 1.6rem; margin: 0 0 6px; }
+  .chapitre { color: var(--bleu); font-size: 0.95rem; margin: 0 0 16px; }
+  h2 { color: var(--bleu); font-size: 1.2rem; margin: 0; }
+  .encadre { border-radius: 8px; padding: 14px 16px; margin: 0 0 16px; }
+  .def { background: var(--def); }
+  .note { background: var(--note); font-size: 0.92rem; }
+  .carte { background: #fff; border: 1px solid #d9d9d9; border-radius: 10px; margin-bottom: 18px; overflow: hidden; }
+  .carte-tete { background: var(--bleu-fonce); color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .carte-tete h2 { color: #fff; }
+  .carte-corps { padding: 16px; }
+  button { font-family: inherit; font-size: 1rem; cursor: pointer; border-radius: 8px; border: none; }
+  .btn-nouveau { background: #fff; color: var(--bleu-fonce); padding: 8px 14px; font-weight: bold; }
+  .btn-verifier { background: var(--bleu); color: #fff; padding: 12px 28px; font-weight: bold; display: block; margin: 20px auto 0; width: 100%; max-width: 320px; }
+  .btn-verifier:hover { background: var(--bleu-fonce); }
+  .enonce { font-size: 1.05rem; margin: 0 0 14px; }
+  .couts { background: var(--gris); border-radius: 8px; padding: 12px 16px; }
+  .couts h3 { margin: 0 0 8px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; color: #555; }
+  .couts ul { list-style: none; margin: 0; padding: 0; }
+  .couts li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid #ddd; }
+  .couts li:last-child { border-bottom: none; }
+  .montant { font-weight: bold; white-space: nowrap; }
+  .saisies { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-top: 18px; }
+  label { display: block; font-size: 0.92rem; margin-bottom: 4px; font-weight: bold; color: #333; }
+  input { width: 100%; padding: 10px 12px; font-size: 1.05rem; border: 2px solid #bbb; border-radius: 8px; font-family: inherit; }
+  input:focus { outline: none; border-color: var(--bleu); }
+  input.juste { border-color: var(--vert); background: #f1f8f1; }
+  input.faux { border-color: var(--rouge); background: #fdf1f1; }
+  .verdict { font-size: 0.85rem; min-height: 1.2em; margin-top: 3px; }
+  .verdict.juste { color: var(--vert); } .verdict.faux { color: var(--rouge); }
+  .score { text-align: center; font-weight: bold; font-size: 1.1rem; margin-top: 14px; }
+  .cache, .btn-corr.cache { display: none; }
+  .raison-mob { display: none; font-size: 0.85rem; color: #444; margin-top: 4px; }
+  .btn-corr { background: #fff; color: var(--bleu-fonce); border: 2px solid var(--bleu); padding: 9px 20px; font-weight: bold; display: block; margin: 12px auto 0; }
+  .etape { background: var(--corrige); border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; }
+  .etape h3 { margin: 0 0 6px; color: var(--bleu-fonce); font-size: 1.05rem; }
+  .etape p { margin: 0 0 8px; }
+  .calcul { background: #fff; border-left: 4px solid var(--bleu); padding: 8px 12px; font-family: "Courier New", monospace; font-size: 0.95rem; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; background: #fff; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
+  th { background: var(--retenir); }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; white-space: nowrap; }
+  .tag-ci { background: var(--def); color: var(--bleu-fonce); }
+  .tag-autre { background: var(--note); color: #7a5b00; }
+  .retenir { background: var(--retenir); border-radius: 8px; padding: 12px 16px; }
+  .retenir h3 { margin: 0 0 6px; color: var(--bleu-fonce); font-size: 1.05rem; }
+  .retenir ul { margin: 0; padding-left: 20px; }
+  @media (max-width: 520px) { h1 { font-size: 1.35rem; } .couts li { flex-direction: column; gap: 0; } th:nth-child(3), td:nth-child(3) { display: none; } .raison-mob { display: block; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <a class="retour" href="../../index.html">&larr; Tous les exercices</a>
+  <h1>Calculer le chiffre d'affaires, la valeur ajoutée et le bénéfice</h1>
+  <p class="chapitre">Seconde - Chapitre 1 : Comment crée-t-on des richesses et comment les mesure-t-on ?</p>
+
+  <div class="encadre def">
+    Objectif d'apprentissage : connaître les principaux indicateurs de création de richesses de l'entreprise (chiffre d'affaires, valeur ajoutée, bénéfice).<br>
+    Consigne : lis la situation, repère parmi les coûts ceux qui sont des consommations intermédiaires, puis calcule les quatre montants. Chaque clic sur « Nouvel exercice » donne une situation différente.
+  </div>
+
+  <div class="carte">
+    <div class="carte-tete">
+      <h2 id="titre">...</h2>
+      <button class="btn-nouveau" id="btnNouveau" type="button">&#8635; Nouvel exercice</button>
+    </div>
+    <div class="carte-corps">
+      <p class="enonce" id="enonce"></p>
+      <div class="couts">
+        <h3>Dépenses de l'année</h3>
+        <ul id="listeCouts"></ul>
+      </div>
+
+      <div class="saisies">
+        <div><label for="ca">Chiffre d'affaires (€)</label><input id="ca" inputmode="numeric" autocomplete="off"><div class="verdict" id="v-ca"></div></div>
+        <div><label for="ci">Consommations intermédiaires (€)</label><input id="ci" inputmode="numeric" autocomplete="off"><div class="verdict" id="v-ci"></div></div>
+        <div><label for="va">Valeur ajoutée (€)</label><input id="va" inputmode="numeric" autocomplete="off"><div class="verdict" id="v-va"></div></div>
+        <div><label for="ben">Bénéfice (€)</label><input id="ben" inputmode="numeric" autocomplete="off"><div class="verdict" id="v-ben"></div></div>
+      </div>
+      <button class="btn-verifier" id="btnVerifier" type="button">Vérifier mes réponses</button>
+      <div class="score" id="score"></div>
+      <button class="btn-corr cache" id="btnCorr" type="button">Voir la correction détaillée</button>
+    </div>
+  </div>
+
+  <div class="carte cache" id="correction">
+    <div class="carte-tete"><h2>Correction détaillée</h2></div>
+    <div class="carte-corps" id="contenuCorrection"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // Raisons types, réutilisées dans la correction poste par poste
+  var R = {
+    bien: "Bien acheté à une autre entreprise et transformé ou détruit pendant la production : c'est une consommation intermédiaire.",
+    energie: "Énergie achetée à un fournisseur et consommée pendant la production : c'est une consommation intermédiaire.",
+    service: "Service acheté à une autre entreprise et utilisé pendant la production : c'est une consommation intermédiaire.",
+    salaire: "Rémunère le travail des salariés de l'entreprise. Ce n'est pas un achat à une autre entreprise : il est payé avec la valeur ajoutée.",
+    cotis: "Cotisations versées à la Sécurité sociale, liées aux salaires. Elles font partie de la rémunération du travail, payée avec la valeur ajoutée.",
+    impot: "Impôt versé à l'État ou aux collectivités locales. Ce n'est pas un achat à une autre entreprise : il est payé avec la valeur ajoutée.",
+    interets: "Intérêts versés à la banque qui a prêté de l'argent. Ils rémunèrent le prêteur et sont payés avec la valeur ajoutée."
+  };
+
+  var SCENARIOS = [
+    { titre: "Le food-truck de burgers", produit: "burgers", prixMin: 8, prixMax: 15, qMin: 8000, qMax: 30000,
+      ci: [["Achat de pain, viande et légumes", "bien"], ["Carburant du camion", "bien"], ["Électricité pour les réfrigérateurs", "energie"], ["Emballages en carton", "bien"], ["Publicité sur les réseaux sociaux réalisée par une agence", "service"]],
+      autres: [["Salaires des employés", "salaire"], ["Cotisations sociales sur les salaires", "cotis"], ["Cotisation foncière des entreprises (impôt local)", "impot"], ["Intérêts de l'emprunt contracté pour acheter le camion", "interets"]] },
+    { titre: "L'artisan menuisier", produit: "tables en bois massif", prixMin: 400, prixMax: 1200, qMin: 60, qMax: 300,
+      ci: [["Achat de planches de chêne", "bien"], ["Vernis et colles", "bien"], ["Électricité de l'atelier", "energie"], ["Vis et petite quincaillerie", "bien"], ["Loyer de l'atelier", "service"]],
+      autres: [["Salaire de l'apprenti", "salaire"], ["Cotisations sociales sur le salaire de l'apprenti", "cotis"], ["Cotisation foncière des entreprises (impôt local)", "impot"], ["Intérêts du prêt pour l'achat de la scie", "interets"]] },
+    { titre: "La créatrice de bijoux", produit: "colliers en argent", prixMin: 40, prixMax: 150, qMin: 800, qMax: 5000,
+      ci: [["Fils d'argent et fermoirs", "bien"], ["Pierres semi-précieuses", "bien"], ["Frais d'envoi postaux", "service"], ["Loyer de la boutique", "service"], ["Abonnement au logiciel de comptabilité", "service"]],
+      autres: [["Salaire de la vendeuse", "salaire"], ["Cotisations sociales sur le salaire de la vendeuse", "cotis"], ["Cotisation foncière des entreprises (impôt local)", "impot"], ["Intérêts de l'emprunt pour aménager la boutique", "interets"]] },
+    { titre: "La boulangerie de quartier", produit: "baguettes", prixMin: 1, prixMax: 2, qMin: 60000, qMax: 150000,
+      ci: [["Farine, levure et sel", "bien"], ["Électricité et gaz des fours", "energie"], ["Sachets en papier", "bien"], ["Réparation du pétrin par un technicien extérieur", "service"], ["Eau", "bien"]],
+      autres: [["Salaires des boulangers et de la vendeuse", "salaire"], ["Cotisations sociales sur les salaires", "cotis"], ["Cotisation foncière des entreprises (impôt local)", "impot"], ["Intérêts de l'emprunt pour acheter le four", "interets"]] },
+    { titre: "Le salon de coiffure", produit: "coupes", prixMin: 20, prixMax: 45, qMin: 2000, qMax: 7000,
+      ci: [["Shampoings, colorations et produits de soin", "bien"], ["Loyer du salon", "service"], ["Électricité et eau", "energie"], ["Serviettes jetables", "bien"], ["Abonnement au logiciel de prise de rendez-vous", "service"]],
+      autres: [["Salaires des coiffeurs", "salaire"], ["Cotisations sociales sur les salaires", "cotis"], ["Cotisation foncière des entreprises (impôt local)", "impot"], ["Intérêts de l'emprunt pour acheter les fauteuils", "interets"]] }
+  ];
+
+  var etat = null;
+
+  function alea(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function arrondi(x, pas) { return Math.max(pas, Math.round(x / pas) * pas); }
+  function melanger(t) { t = t.slice(); for (var i = t.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = t[i]; t[i] = t[j]; t[j] = x; } return t; }
+  function euros(n) { return n.toLocaleString("fr-FR") + " €"; }
+  function lire(id) {
+    var brut = document.getElementById(id).value.replace(/[\s  €.]/g, "").replace(",", ".");
+    if (brut === "" || isNaN(Number(brut))) return null;
+    return Math.round(Number(brut));
+  }
+
+  function generer() {
+    var s = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)];
+    var pasQ = s.qMax >= 10000 ? 500 : (s.qMax >= 1000 ? 50 : 5);
+    var q = arrondi(alea(s.qMin, s.qMax), pasQ);
+    var prix = alea(s.prixMin, s.prixMax);
+    var ca = q * prix;
+    var pas = ca >= 100000 ? 100 : 10;
+
+    var postes = [];
+    var nbCI = alea(3, 4);
+    melanger(s.ci).slice(0, nbCI).forEach(function (p) {
+      postes.push({ libelle: p[0], raison: R[p[1]], estCI: true, montant: arrondi(ca * alea(4, 12) / 100, pas) });
+    });
+    var totalCI = postes.reduce(function (a, p) { return a + p.montant; }, 0);
+    var va = ca - totalCI;
+
+    var nbAutres = alea(3, 4);
+    // Toujours un salaire ; les autres postes au hasard
+    var autres = [s.autres[0]].concat(melanger(s.autres.slice(1)).slice(0, nbAutres - 1));
+    var parts = { salaire: [30, 40], cotis: [10, 14], impot: [2, 5], interets: [2, 6] };
+    autres.forEach(function (p) {
+      var b = parts[p[1]];
+      postes.push({ libelle: p[0], raison: R[p[1]], estCI: false, montant: arrondi(va * alea(b[0], b[1]) / 100, pas) });
+    });
+    var totalAutres = postes.filter(function (p) { return !p.estCI; }).reduce(function (a, p) { return a + p.montant; }, 0);
+
+    etat = { s: s, q: q, prix: prix, ca: ca, ci: totalCI, va: va, autres: totalAutres, ben: va - totalAutres, postes: melanger(postes) };
+    afficher();
+  }
+
+  function afficher() {
+    document.getElementById("titre").textContent = etat.s.titre;
+    document.getElementById("enonce").innerHTML = "Au cours de l'année, cette entreprise a produit et vendu <strong>" +
+      etat.q.toLocaleString("fr-FR") + " " + etat.s.produit + "</strong> au prix unitaire de <strong>" + euros(etat.prix) + "</strong>.";
+    var ul = document.getElementById("listeCouts");
+    ul.innerHTML = "";
+    etat.postes.forEach(function (p) {
+      var li = document.createElement("li");
+      var a = document.createElement("span"); a.textContent = p.libelle;
+      var b = document.createElement("span"); b.className = "montant"; b.textContent = euros(p.montant);
+      li.appendChild(a); li.appendChild(b); ul.appendChild(li);
+    });
+    ["ca", "ci", "va", "ben"].forEach(function (id) {
+      var el = document.getElementById(id); el.value = ""; el.className = "";
+      var v = document.getElementById("v-" + id); v.textContent = ""; v.className = "verdict";
+    });
+    document.getElementById("score").textContent = "";
+    document.getElementById("correction").classList.add("cache");
+    document.getElementById("btnCorr").classList.add("cache");
+  }
+
+  function verifier() {
+    var attendus = { ca: etat.ca, ci: etat.ci, va: etat.va, ben: etat.ben };
+    var bons = 0;
+    Object.keys(attendus).forEach(function (id) {
+      var val = lire(id), el = document.getElementById(id), v = document.getElementById("v-" + id);
+      var ok = val === attendus[id];
+      if (ok) bons++;
+      el.className = ok ? "juste" : "faux";
+      v.className = "verdict " + (ok ? "juste" : "faux");
+      v.textContent = val === null ? "Pas de réponse" : (ok ? "Juste" : "Faux");
+    });
+    // Erreurs typiques, signalées sans donner la réponse
+    var conseil = "";
+    var ci = lire("ci"), va = lire("va"), ben = lire("ben");
+    var tout = etat.ci + etat.autres;
+    if (ci === tout) conseil = " Tu as additionné toutes les dépenses dans les CI : relis la définition des consommations intermédiaires.";
+    else if (va !== null && ci !== null && va === etat.ca - ci && ci !== etat.ci) conseil = " Ta valeur ajoutée est cohérente avec tes CI : c'est le tri des CI qu'il faut revoir.";
+    else if (ben === etat.va) conseil = " Ton bénéfice est égal à la valeur ajoutée : il faut encore retirer les salaires, cotisations, impôts et intérêts.";
+    document.getElementById("score").textContent = "Score : " + bons + " / 4." + (bons === 4 ? " Bravo, tout est juste !" : conseil + " Corrige tes réponses fausses et vérifie à nouveau, ou consulte la correction.");
+    if (bons === 4) corriger(); else document.getElementById("btnCorr").classList.remove("cache");
+  }
+
+  function corriger() {
+    var e = etat;
+    var ci = e.postes.filter(function (p) { return p.estCI; });
+    var autres = e.postes.filter(function (p) { return !p.estCI; });
+    var lignes = e.postes.map(function (p) {
+      return "<tr><td>" + p.libelle + "<br><strong>" + euros(p.montant) + "</strong><span class=\"raison-mob\">" + p.raison + "</span></td><td>" +
+        (p.estCI ? '<span class="tag tag-ci">CI</span>' : '<span class="tag tag-autre">Pas une CI</span>') +
+        "</td><td>" + p.raison + "</td></tr>";
+    }).join("");
+    var somme = function (t) { return t.map(function (p) { return p.montant.toLocaleString("fr-FR"); }).join(" + "); };
+
+    document.getElementById("contenuCorrection").innerHTML =
+      '<div class="etape"><h3>1. Le chiffre d\'affaires (CA)</h3><p>Le chiffre d\'affaires est la valeur des ventes de l\'entreprise sur l\'année.</p>' +
+      '<div class="calcul">CA = quantité vendue × prix unitaire<br>CA = ' + e.q.toLocaleString("fr-FR") + " × " + e.prix.toLocaleString("fr-FR") + " = <strong>" + euros(e.ca) + "</strong></div></div>" +
+
+      '<div class="etape"><h3>2. Trier les dépenses</h3><p>Les consommations intermédiaires (CI) sont les biens et les services achetés à d\'autres entreprises et transformés ou détruits au cours de la production.</p>' +
+      "<table><thead><tr><th>Dépense</th><th>Classement</th><th>Pourquoi ?</th></tr></thead><tbody>" + lignes + "</tbody></table></div>" +
+
+      '<div class="etape"><h3>3. Les consommations intermédiaires</h3><div class="calcul">CI = ' + somme(ci) + " = <strong>" + euros(e.ci) + "</strong></div></div>" +
+
+      '<div class="etape"><h3>4. La valeur ajoutée (VA)</h3><p>La valeur ajoutée mesure la richesse créée par l\'entreprise elle-même : la valeur de sa production, moins la valeur de ce qu\'elle a acheté à d\'autres entreprises pour produire.</p>' +
+      '<div class="calcul">VA = CA - CI<br>VA = ' + e.ca.toLocaleString("fr-FR") + " - " + e.ci.toLocaleString("fr-FR") + " = <strong>" + euros(e.va) + "</strong></div></div>" +
+
+      '<div class="etape"><h3>5. Le bénéfice</h3><p>La valeur ajoutée sert à payer les salaires et les cotisations sociales, les impôts et les intérêts des emprunts. Ce qui reste est le bénéfice de l\'entreprise.</p>' +
+      '<div class="calcul">Autres dépenses = ' + somme(autres) + " = " + euros(e.autres) + "<br>Bénéfice = VA - autres dépenses<br>Bénéfice = " +
+      e.va.toLocaleString("fr-FR") + " - " + e.autres.toLocaleString("fr-FR") + " = <strong>" + euros(e.ben) + "</strong></div></div>" +
+
+      '<div class="retenir"><h3>Ce qu\'il faut retenir</h3><ul>' +
+      "<li>CA = quantité vendue × prix.</li>" +
+      "<li>Les CI sont des achats à d'autres entreprises : matières premières, mais aussi services (électricité, loyer, publicité, logiciels...).</li>" +
+      "<li>VA = CA - CI : c'est la richesse créée par l'entreprise.</li>" +
+      "<li>Salaires, cotisations sociales, impôts et intérêts ne sont pas des CI : ils sont payés à partir de la VA. Ce qui reste est le bénéfice.</li>" +
+      "</ul></div>" +
+      '<p class="encadre note" style="margin-top:12px">Remarque : le calcul du bénéfice est simplifié. On ne tient pas compte ici de l\'usure des machines et des bâtiments.</p>';
+    document.getElementById("correction").classList.remove("cache");
+  }
+
+  document.getElementById("btnNouveau").addEventListener("click", function () { generer(); window.scrollTo({ top: 0, behavior: "smooth" }); });
+  document.getElementById("btnVerifier").addEventListener("click", verifier);
+  document.getElementById("btnCorr").addEventListener("click", function () { corriger(); document.getElementById("correction").scrollIntoView({ behavior: "smooth" }); });
+  ["ca", "ci", "va", "ben"].forEach(function (id) {
+    document.getElementById(id).addEventListener("keydown", function (ev) { if (ev.key === "Enter") verifier(); });
+  });
+
+  // Accès pour les tests automatisés
+  window.__exercice = { etat: function () { return etat; }, generer: generer };
+  generer();
+})();
+</script>
+</body>
+</html>
