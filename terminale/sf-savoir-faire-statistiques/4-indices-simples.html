@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiche outil n°4 - Les indices simples</title>
+<meta name="chapitre" content="Savoir-faire statistiques (fiches outils)">
+<meta name="description" content="Calculer des indices base 100, les lire et en déduire un taux de variation entre deux années.">
+<style>
+  :root { --bleu:#DDEBF7; --vert:#E2EFDA; --rouge:#FBDBD7; --gris:#F2F2F2; --fonce:#1F3864; }
+  * { box-sizing:border-box; }
+  body { font-family:Arial, sans-serif; margin:0; background:#fafafa; color:#222; }
+  .wrap { max-width:900px; margin:0 auto; padding:20px; }
+  h1 { color:var(--fonce); font-size:1.5rem; margin:10px 0 4px; }
+  .sous { color:#555; font-style:italic; margin-bottom:16px; }
+  .carte { background:#fff; border:1px solid #ccc; border-radius:8px; padding:16px 20px; margin-bottom:16px; }
+  .essentiel { background:var(--bleu); border:1px solid #9dc3e6; }
+  .essentiel h2 { margin:0 0 8px; font-size:1.05rem; color:var(--fonce); }
+  .donnees { background:var(--gris); }
+  table { border-collapse:collapse; width:100%; margin:8px 0; }
+  th,td { border:1px solid #808080; padding:6px 8px; font-size:.92rem; }
+  th { background:#d9d9d9; }
+  td.num { text-align:right; }
+  input[type=text] { width:80px; padding:5px; border:1px solid #999; border-radius:4px; font-size:.95rem; text-align:right; }
+  input.ok { background:var(--vert); border-color:#538135; }
+  input.ko { background:var(--rouge); border-color:#c00; }
+  button { background:var(--fonce); color:#fff; border:none; border-radius:6px; padding:10px 18px; font-size:1rem; cursor:pointer; margin-right:10px; margin-top:6px; }
+  button.sec { background:#767171; }
+  .feedback { margin-top:12px; padding:12px 14px; border-radius:6px; display:none; font-size:.95rem; }
+  .feedback.bon { display:block; background:var(--vert); border:1px solid #538135; }
+  .feedback.mauvais { display:block; background:var(--rouge); border:1px solid #c00; }
+  .source { font-size:.8rem; color:#555; font-style:italic; }
+  .score { font-weight:bold; color:var(--fonce); }
+  .lecture label { display:block; margin:6px 0; cursor:pointer; padding:6px 8px; border-radius:4px; }
+  .lecture label:hover { background:#eef4fb; }
+  .q { margin-top:12px; }
+  .retour { display:inline-block; margin-bottom:6px; color:#2E75B6; text-decoration:none; }
+  .defile { overflow-x:auto; }
+  .resume { margin-bottom:8px; }
+  .glisse { display:none; font-size:.8rem; color:#2E75B6; margin-bottom:4px; }
+  @media (max-width:520px) { .wrap { padding:12px; } .carte { padding:12px; } th,td { padding:4px 4px; } input[type=text] { width:58px; font-size:.9rem; padding:4px; } th,td { font-size:.82rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="retour" href="../../index.html">&larr; Tous les exercices</a>
+  <h1>Entraînement autonome n°4 - Les indices simples</h1>
+  <div class="sous">Fiche outil n°4 · Terminale SES · Les valeurs changent à chaque nouvel exercice.</div>
+
+  <div class="carte essentiel">
+    <h2>Rappel de la méthode</h2>
+    <b>Indice de l'année n = (valeur de l'année n ÷ valeur de l'année de base) × 100.</b><br>
+    Lecture : indice 113 (base 100 en [année de base]) = +13 % depuis l'année de base ; indice 92 = −8 %.<br>
+    Entre deux années hors base : taux = [(I2 − I1) ÷ I1] × 100 : on ne soustrait pas simplement les indices !
+  </div>
+
+  <div class="carte donnees">
+    <b id="titreData"></b>
+    <div class="defile"><table id="tbl"></table></div><div class="glisse" id="glisse">&harr; Fais glisser le tableau pour voir toutes les colonnes.</div>
+    <div class="source">Montants fictifs tirés au hasard pour l'entraînement, dans des ordres de grandeur inspirés des séries de l'Insee.</div>
+  </div>
+
+  <div class="carte">
+    <div class="q"><b>Question 1.</b> Complétez la ligne des indices, base 100 en <span id="anBase"></span> (arrondir à <b>une décimale</b>).</div>
+    <div class="q"><b>Question 2.</b> Quelle est la phrase de lecture correcte de l'indice de <span id="anLecture"></span> ?</div>
+    <div class="lecture" id="qcm"></div>
+    <div class="q"><b>Question 3.</b> À partir des indices, calculez le taux de variation entre <span id="anD"></span> et <span id="anF"></span> (en %, arrondir à une décimale) :
+      <input type="text" id="rep3" autocomplete="off"> %</div>
+    <button onclick="corriger()">Corriger</button>
+    <button class="sec" onclick="nouvelExo()">Nouvel exercice</button>
+    <span class="score" id="score"></span>
+    <div class="feedback" id="fb"></div>
+  </div>
+</div>
+
+<script>
+let valeurs = [], annees = [], indices = [], iBase = 0, iLect = 0, iD = 0, iF = 0;
+let bonneReponseQCM = 0, reussites = 0, tentatives = 0, unite = "";
+let essaye = false, reussi = false, vu = false, lastCorr = '';
+const CONTEXTES = [
+  "PIB d'un pays en volume (en milliards d'euros constants)",
+  "Salaire moyen annuel dans un pays (en euros constants)",
+  "Production industrielle d'un pays (en milliards d'euros constants)",
+];
+
+function alea(min, max, dec = 1) {
+  const v = Math.random() * (max - min) + min;
+  return Math.round(v * Math.pow(10, dec)) / Math.pow(10, dec);
+}
+function fmt(x, dec = 1) { return x.toFixed(dec).replace(".", ","); }
+function lireNombre(s) {
+  if (!s) return NaN;
+  return parseFloat(s.replace(/[\u2212\u2013]/g, "-").replace(",", ".").replace(/\s/g, "").replace("+", ""));
+}
+
+function nouvelExo() {
+  essaye = false; reussi = false; vu = false; lastCorr = '';
+  const ic = Math.floor(Math.random() * CONTEXTES.length);
+  const contexte = CONTEXTES[ic];
+  unite = ic === 1 ? "euros" : "milliards d'euros";
+  const an0 = 2017 + Math.floor(Math.random() * 4);
+  annees = [0, 1, 2, 3, 4].map(k => an0 + k);
+  iBase = 0; // base = première année, cas le plus courant dans les sujets
+  let v = ic === 1 ? alea(28000, 42000, 0) : alea(1000, 2600, 1);
+  valeurs = [v];
+  for (let k = 1; k < 5; k++) {
+    // évolutions annuelles entre −6 % et +7 % (une baisse possible, comme en 2020)
+    const t = Math.random() < 0.25 ? alea(-6, -0.5, 1) : alea(0.5, 7, 1);
+    v = ic === 1 ? Math.round(v * (1 + t / 100)) : Math.round(v * (1 + t / 100) * 10) / 10;
+    valeurs.push(v);
+  }
+  indices = valeurs.map(x => x / valeurs[iBase] * 100);
+
+  // années pour Q2 et Q3 (hors année de base pour la Q3, c'est le piège travaillé)
+  iLect = 1 + Math.floor(Math.random() * 4);
+  iD = 1 + Math.floor(Math.random() * 2);
+  iF = iD + 1 + Math.floor(Math.random() * (4 - iD - 1) + 1);
+  if (iF > 4) iF = 4;
+
+  document.getElementById("titreData").textContent = contexte;
+  let ligne1 = "<tr><th>Année</th>" + annees.map(a => `<th>${a}</th>`).join("") + "</tr>";
+  let ligne2 = "<tr><td>Valeur</td>" + valeurs.map(x => `<td class="num">${ic === 1 ? x.toLocaleString("fr-FR") : fmt(x)}</td>`).join("") + "</tr>";
+  let ligne3 = "<tr><td>Indice (base 100 en " + annees[iBase] + ")</td>" +
+    indices.map((x, k) => k === iBase ? `<td class="num"><b>100</b></td>` : `<td class="num"><input type="text" id="idx${k}" autocomplete="off"></td>`).join("") + "</tr>";
+  document.getElementById("tbl").innerHTML = ligne1 + ligne2 + ligne3;
+
+  document.getElementById("anBase").textContent = annees[iBase];
+  document.getElementById("anLecture").textContent = annees[iLect];
+  document.getElementById("anD").textContent = annees[iD];
+  document.getElementById("anF").textContent = annees[iF];
+
+  const evo = indices[iLect] - 100;
+  const sens = evo >= 0 ? "augmenté" : "diminué";
+  const bonne = `Entre ${annees[iBase]} et ${annees[iLect]}, cette grandeur a ${sens} d'environ ${fmt(Math.abs(evo))} % (indice ${fmt(indices[iLect])}).`;
+  const fausses = [
+    `En ${annees[iLect]}, cette grandeur vaut ${fmt(indices[iLect])} ${unite}.`,
+    `Entre ${annees[iBase]} et ${annees[iLect]}, cette grandeur a ${sens} de ${fmt(indices[iLect])} %.`,
+  ];
+  const options = [bonne, ...fausses].map((t, i) => ({ t, bonne: i === 0 })).sort(() => Math.random() - 0.5);
+  bonneReponseQCM = options.findIndex(o => o.bonne);
+  document.getElementById("qcm").innerHTML = options.map((o, i) =>
+    `<label><input type="radio" name="qcm" value="${i}"> ${o.t}</label>`).join("");
+
+  const r3 = document.getElementById("rep3"); r3.value = ""; r3.className = "";
+  document.getElementById("fb").className = "feedback";
+  document.getElementById("fb").innerHTML = "";
+}
+
+function corriger() {
+  if (!essaye) { essaye = true; tentatives++; }
+  let toutBon = true;
+  let msg = "";
+
+  for (let k = 0; k < 5; k++) {
+    if (k === iBase) continue;
+    const champ = document.getElementById("idx" + k);
+    const rep = lireNombre(champ.value);
+    const bon = !isNaN(rep) && Math.abs(rep - indices[k]) <= 0.15;
+    champ.className = bon ? "ok" : "ko";
+    if (!bon) {
+      toutBon = false;
+      msg += `<br>• Indice ${annees[k]} : (${valeurs[k].toLocaleString("fr-FR")} ÷ ${valeurs[iBase].toLocaleString("fr-FR")}) × 100 ≈ <b>${fmt(indices[k])}</b>.`;
+    }
+  }
+
+  const choix = document.querySelector('input[name="qcm"]:checked');
+  const bon2 = choix && parseInt(choix.value) === bonneReponseQCM;
+  if (!bon2) {
+    toutBon = false;
+    msg += `<br>• Q2 : un indice se lit par son écart à 100 : indice ${fmt(indices[iLect])} = ${indices[iLect] >= 100 ? "+" : "−"}${fmt(Math.abs(indices[iLect] - 100))} % depuis ${annees[iBase]}. Un indice n'est ni un montant, ni directement un pourcentage.`;
+  }
+
+  const tauxVrai = (indices[iF] - indices[iD]) / indices[iD] * 100;
+  const r3 = lireNombre(document.getElementById("rep3").value);
+  const bon3 = !isNaN(r3) && Math.abs(r3 - tauxVrai) <= 0.15;
+  document.getElementById("rep3").className = bon3 ? "ok" : "ko";
+  if (!bon3) {
+    toutBon = false;
+    msg += `<br>• Q3 : [(${fmt(indices[iF])} − ${fmt(indices[iD])}) ÷ ${fmt(indices[iD])}] × 100 ≈ <b>${fmt(tauxVrai)} %</b>. La simple différence des indices (${fmt(indices[iF] - indices[iD])} points d'indice) ne donne pas le taux, car ${annees[iD]} n'est pas l'année de base.`;
+  }
+
+  const fb = document.getElementById("fb");
+  if (toutBon) {
+    if (!reussi && !vu) { reussi = true; reussites++; }
+    fb.className = "feedback bon";
+    fb.innerHTML = "<b>Bravo, tout est juste !</b> Vous savez calculer un indice, le lire et en tirer un taux de variation entre deux années quelconques : le trio complet exigé au bac.";
+  } else {
+    fb.className = "feedback mauvais";
+    lastCorr = "<b>Correction.</b> Rappel : indice = (valeur ÷ valeur de base) × 100 ; entre deux années hors base, taux = [(I2 − I1) ÷ I1] × 100.<u><br>Corrections :</u>" + msg;
+    const nKo = document.querySelectorAll('input.ko').length;
+    const qf = !bon2;
+    fb.innerHTML = '<div class="resume"><b>Pas encore.</b> ' + (nKo ? nKo + ' case(s) en rouge à revoir' : '') + (nKo && qf ? ', et ' : '') + (qf ? 'la phrase de lecture n\'est pas la bonne' : '') + '. Corrige puis clique de nouveau sur « Corriger », ou consulte la correction.</div>' + '<button class="sec" onclick="voirCorrection()">Voir la correction</button>';
+  }
+  document.getElementById("score").textContent = `Exercices réussis sans voir la correction : ${reussites} sur ${tentatives}`;
+}
+
+function voirCorrection() {
+  vu = true;
+  const fb = document.getElementById("fb");
+  fb.className = "feedback mauvais";
+  fb.innerHTML = lastCorr;
+}
+
+function verifDefile() {
+  const d = document.querySelector('.defile');
+  document.getElementById('glisse').style.display = d.scrollWidth > d.clientWidth + 2 ? 'block' : 'none';
+}
+window.addEventListener('resize', verifDefile);
+
+nouvelExo();
+verifDefile();
+</script>
+</body>
+</html>

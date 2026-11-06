@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiche outil n°1 - Le pourcentage de répartition</title>
+<meta name="chapitre" content="Savoir-faire statistiques (fiches outils)">
+<meta name="description" content="Calculer la part de chaque branche dans la valeur ajoutée et choisir la bonne phrase de lecture.">
+<style>
+  :root { --bleu:#DDEBF7; --vert:#E2EFDA; --rouge:#FBDBD7; --gris:#F2F2F2; --fonce:#1F3864; }
+  * { box-sizing:border-box; }
+  body { font-family:Arial, sans-serif; margin:0; background:#fafafa; color:#222; }
+  .wrap { max-width:860px; margin:0 auto; padding:20px; }
+  h1 { color:var(--fonce); font-size:1.5rem; margin:10px 0 4px; }
+  .sous { color:#555; font-style:italic; margin-bottom:16px; }
+  .carte { background:#fff; border:1px solid #ccc; border-radius:8px; padding:16px 20px; margin-bottom:16px; }
+  .essentiel { background:var(--bleu); border:1px solid #9dc3e6; }
+  .essentiel h2 { margin:0 0 8px; font-size:1.05rem; color:var(--fonce); }
+  .donnees { background:var(--gris); }
+  table { border-collapse:collapse; width:100%; margin:8px 0; }
+  th,td { border:1px solid #808080; padding:6px 10px; font-size:.95rem; }
+  th { background:#d9d9d9; }
+  td.num { text-align:right; }
+  input[type=text] { width:90px; padding:5px; border:1px solid #999; border-radius:4px; font-size:1rem; text-align:right; }
+  input.ok { background:var(--vert); border-color:#538135; }
+  input.ko { background:var(--rouge); border-color:#c00; }
+  button { background:var(--fonce); color:#fff; border:none; border-radius:6px; padding:10px 18px; font-size:1rem; cursor:pointer; margin-right:10px; margin-top:6px; }
+  button.sec { background:#767171; }
+  .feedback { margin-top:12px; padding:12px 14px; border-radius:6px; display:none; font-size:.95rem; }
+  .feedback.bon { display:block; background:var(--vert); border:1px solid #538135; }
+  .feedback.mauvais { display:block; background:var(--rouge); border:1px solid #c00; }
+  .source { font-size:.8rem; color:#555; font-style:italic; }
+  .score { font-weight:bold; color:var(--fonce); }
+  .lecture label { display:block; margin:6px 0; cursor:pointer; padding:6px 8px; border-radius:4px; }
+  .lecture label:hover { background:#eef4fb; }
+  .retour { display:inline-block; margin-bottom:6px; color:#2E75B6; text-decoration:none; }
+  .defile { overflow-x:auto; }
+  .resume { margin-bottom:8px; }
+  .glisse { display:none; font-size:.8rem; color:#2E75B6; margin-bottom:4px; }
+  @media (max-width:520px) { .wrap { padding:12px; } .carte { padding:12px; } th,td { padding:4px 4px; } input[type=text] { width:58px; font-size:.9rem; padding:4px; } th,td { font-size:.82rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="retour" href="../../index.html">&larr; Tous les exercices</a>
+  <h1>Entraînement autonome n°1 - Le pourcentage de répartition</h1>
+  <div class="sous">Fiche outil n°1 · Terminale SES · Les valeurs changent à chaque nouvel exercice.</div>
+
+  <div class="carte essentiel">
+    <h2>Rappel de la méthode</h2>
+    <b>Pourcentage de répartition = (valeur de la partie ÷ valeur de l'ensemble) × 100.</b><br>
+    Lecture : « [La partie] représente X % de [l'ensemble]. » La somme des parts vaut 100 % (à l'arrondi près).
+  </div>
+
+  <div class="carte donnees">
+    <b>Valeur ajoutée par branche d'activité d'une économie fictive, inspirée de la structure française (en milliards d'euros)</b>
+    <div class="defile"><table id="tbl"></table></div><div class="glisse" id="glisse">&harr; Fais glisser le tableau pour voir toutes les colonnes.</div>
+    <div class="source">Structure inspirée de : Insee, comptes nationaux, base 2020 (VA par branche, France, 2024). Les montants sont tirés au hasard pour l'entraînement.</div>
+  </div>
+
+  <div class="carte">
+    <b>Question 1.</b> Calculez la part de chaque branche dans la valeur ajoutée totale (en %, arrondir à <b>une décimale</b>, utiliser la virgule ou le point). Complétez la colonne du tableau ci-dessus.
+    <div style="margin-top:10px"><b>Question 2.</b> Quelle est la phrase de lecture correcte pour la part des <span id="brancheLecture"></span> ?</div>
+    <div class="lecture" id="qcm"></div>
+    <button onclick="corriger()">Corriger</button>
+    <button class="sec" onclick="nouvelExo()">Nouvel exercice</button>
+    <span class="score" id="score"></span>
+    <div class="feedback" id="fb"></div>
+  </div>
+</div>
+
+<script>
+const BRANCHES = ["Agriculture", "Industrie", "Construction", "Services marchands", "Services non marchands"];
+let donnees = [], total = 0, bonneReponseQCM = 0, brancheQCM = 0, reussites = 0, tentatives = 0;
+let essaye = false, reussi = false, vu = false, lastCorr = '';
+
+function alea(min, max, dec = 1) {
+  const v = Math.random() * (max - min) + min;
+  return Math.round(v * Math.pow(10, dec)) / Math.pow(10, dec);
+}
+
+function nouvelExo() {
+  essaye = false; reussi = false; vu = false; lastCorr = '';
+  // Ordres de grandeur proches de la structure réelle française (petite branche agricole, services dominants)
+  donnees = [alea(25, 60), alea(280, 450), alea(100, 190), alea(1200, 1700), alea(450, 650)];
+  total = Math.round(donnees.reduce((a, b) => a + b, 0) * 10) / 10;
+  const tbl = document.getElementById("tbl");
+  let html = "<tr><th>Branche</th><th>Valeur ajoutée (Md€)</th><th>Part (%)</th></tr>";
+  donnees.forEach((v, i) => {
+    html += `<tr><td>${BRANCHES[i]}</td><td class="num">${v.toFixed(1).replace(".", ",")}</td><td class="num"><input type="text" id="r${i}" autocomplete="off"> %</td></tr>`;
+  });
+  html += `<tr><td><b>Ensemble des branches</b></td><td class="num"><b>${total.toFixed(1).replace(".", ",")}</b></td><td class="num">≈ 100 %</td></tr>`;
+  tbl.innerHTML = html;
+
+  // QCM de lecture sur une branche tirée au sort
+  brancheQCM = Math.floor(Math.random() * BRANCHES.length);
+  const part = (donnees[brancheQCM] / total * 100).toFixed(1).replace(".", ",");
+  document.getElementById("brancheLecture").textContent = BRANCHES[brancheQCM].toLowerCase();
+  const bonnes = `Dans cette économie, la branche « ${BRANCHES[brancheQCM]} » représente ${part} % de la valeur ajoutée totale.`;
+  const fausses = [
+    `La valeur ajoutée de la branche « ${BRANCHES[brancheQCM]} » a augmenté de ${part} %.`,
+    `La branche « ${BRANCHES[brancheQCM]} » produit ${part} milliards d'euros de valeur ajoutée.`,
+  ];
+  const options = [bonnes, ...fausses].map((t, i) => ({ t, bonne: i === 0 })).sort(() => Math.random() - 0.5);
+  bonneReponseQCM = options.findIndex(o => o.bonne);
+  document.getElementById("qcm").innerHTML = options.map((o, i) =>
+    `<label><input type="radio" name="qcm" value="${i}"> ${o.t}</label>`).join("");
+
+  document.getElementById("fb").className = "feedback";
+  document.getElementById("fb").innerHTML = "";
+}
+
+function lireNombre(s) {
+  if (!s) return NaN;
+  return parseFloat(s.replace(/[\u2212\u2013]/g, "-").replace(",", ".").replace(/\s/g, ""));
+}
+
+function corriger() {
+  if (!essaye) { essaye = true; tentatives++; }
+  let toutBon = true;
+  let details = "";
+  donnees.forEach((v, i) => {
+    const attendu = v / total * 100;
+    const champ = document.getElementById("r" + i);
+    const rep = lireNombre(champ.value);
+    const bon = !isNaN(rep) && Math.abs(rep - attendu) <= 0.15;
+    champ.className = bon ? "ok" : "ko";
+    if (!bon) {
+      toutBon = false;
+      details += `<br>• ${BRANCHES[i]} : (${v.toFixed(1).replace(".", ",")} ÷ ${total.toFixed(1).replace(".", ",")}) × 100 ≈ <b>${attendu.toFixed(1).replace(".", ",")} %</b>`;
+    }
+  });
+  const choix = document.querySelector('input[name="qcm"]:checked');
+  const qcmBon = choix && parseInt(choix.value) === bonneReponseQCM;
+  if (!qcmBon) toutBon = false;
+
+  const fb = document.getElementById("fb");
+  if (toutBon) {
+    if (!reussi && !vu) { reussi = true; reussites++; }
+    fb.className = "feedback bon";
+    fb.innerHTML = "<b>Bravo, tout est juste !</b> Calculs exacts et phrase de lecture correcte : la part se lit bien comme un poids dans un ensemble, à une date donnée.";
+  } else {
+    fb.className = "feedback mauvais";
+    lastCorr = "<b>Correction.</b> Rappel : part = (partie ÷ ensemble) × 100." + (details ? "<br><u>Corrections des calculs :</u>" + details : "") +
+      (!qcmBon ? "<br><u>Lecture :</u> un pourcentage de répartition mesure un <b>poids</b> dans un ensemble (« représente X % de… »), jamais une évolution ni un montant en euros." : "");
+    const nKo = document.querySelectorAll('input.ko').length;
+    const qf = !qcmBon;
+    fb.innerHTML = '<div class="resume"><b>Pas encore.</b> ' + (nKo ? nKo + ' case(s) en rouge à revoir' : '') + (nKo && qf ? ', et ' : '') + (qf ? 'la phrase de lecture n\'est pas la bonne' : '') + '. Corrige puis clique de nouveau sur « Corriger », ou consulte la correction.</div>' + '<button class="sec" onclick="voirCorrection()">Voir la correction</button>';
+  }
+  document.getElementById("score").textContent = `Exercices réussis sans voir la correction : ${reussites} sur ${tentatives}`;
+}
+
+function voirCorrection() {
+  vu = true;
+  const fb = document.getElementById("fb");
+  fb.className = "feedback mauvais";
+  fb.innerHTML = lastCorr;
+}
+
+function verifDefile() {
+  const d = document.querySelector('.defile');
+  document.getElementById('glisse').style.display = d.scrollWidth > d.clientWidth + 2 ? 'block' : 'none';
+}
+window.addEventListener('resize', verifDefile);
+
+nouvelExo();
+verifDefile();
+</script>
+</body>
+</html>

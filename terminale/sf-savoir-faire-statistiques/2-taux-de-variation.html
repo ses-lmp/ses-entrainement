@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiche outil n°2 - Le taux de variation</title>
+<meta name="chapitre" content="Savoir-faire statistiques (fiches outils)">
+<meta name="description" content="Calculer un taux de variation, le lire correctement et distinguer % et points de pourcentage.">
+<style>
+  :root { --bleu:#DDEBF7; --vert:#E2EFDA; --rouge:#FBDBD7; --gris:#F2F2F2; --fonce:#1F3864; }
+  * { box-sizing:border-box; }
+  body { font-family:Arial, sans-serif; margin:0; background:#fafafa; color:#222; }
+  .wrap { max-width:860px; margin:0 auto; padding:20px; }
+  h1 { color:var(--fonce); font-size:1.5rem; margin:10px 0 4px; }
+  .sous { color:#555; font-style:italic; margin-bottom:16px; }
+  .carte { background:#fff; border:1px solid #ccc; border-radius:8px; padding:16px 20px; margin-bottom:16px; }
+  .essentiel { background:var(--bleu); border:1px solid #9dc3e6; }
+  .essentiel h2 { margin:0 0 8px; font-size:1.05rem; color:var(--fonce); }
+  .donnees { background:var(--gris); }
+  table { border-collapse:collapse; width:100%; margin:8px 0; }
+  th,td { border:1px solid #808080; padding:6px 10px; font-size:.95rem; }
+  th { background:#d9d9d9; }
+  td.num { text-align:right; }
+  input[type=text] { width:100px; padding:5px; border:1px solid #999; border-radius:4px; font-size:1rem; text-align:right; }
+  input.ok { background:var(--vert); border-color:#538135; }
+  input.ko { background:var(--rouge); border-color:#c00; }
+  button { background:var(--fonce); color:#fff; border:none; border-radius:6px; padding:10px 18px; font-size:1rem; cursor:pointer; margin-right:10px; margin-top:6px; }
+  button.sec { background:#767171; }
+  .feedback { margin-top:12px; padding:12px 14px; border-radius:6px; display:none; font-size:.95rem; }
+  .feedback.bon { display:block; background:var(--vert); border:1px solid #538135; }
+  .feedback.mauvais { display:block; background:var(--rouge); border:1px solid #c00; }
+  .source { font-size:.8rem; color:#555; font-style:italic; }
+  .score { font-weight:bold; color:var(--fonce); }
+  .lecture label { display:block; margin:6px 0; cursor:pointer; padding:6px 8px; border-radius:4px; }
+  .lecture label:hover { background:#eef4fb; }
+  .q { margin-top:12px; }
+  .retour { display:inline-block; margin-bottom:6px; color:#2E75B6; text-decoration:none; }
+  .defile { overflow-x:auto; }
+  .resume { margin-bottom:8px; }
+  .glisse { display:none; font-size:.8rem; color:#2E75B6; margin-bottom:4px; }
+  @media (max-width:520px) { .wrap { padding:12px; } .carte { padding:12px; } th,td { padding:4px 4px; } input[type=text] { width:58px; font-size:.9rem; padding:4px; } th,td { font-size:.82rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="retour" href="../../index.html">&larr; Tous les exercices</a>
+  <h1>Entraînement autonome n°2 - Le taux de variation</h1>
+  <div class="sous">Fiche outil n°2 · Terminale SES · Les valeurs changent à chaque nouvel exercice.</div>
+
+  <div class="carte essentiel">
+    <h2>Rappel de la méthode</h2>
+    <b>Taux de variation = [(valeur d'arrivée − valeur de départ) ÷ valeur de départ] × 100.</b><br>
+    Lecture : « Entre [date 1] et [date 2], [la grandeur] a augmenté / diminué de X %. »<br>
+    Attention : on divise par la valeur de <b>départ</b> ; un écart entre deux taux se mesure en <b>points de pourcentage</b>.
+  </div>
+
+  <div class="carte donnees">
+    <b id="titreData"></b>
+    <div class="defile"><table id="tbl"></table></div><div class="glisse" id="glisse">&harr; Fais glisser le tableau pour voir toutes les colonnes.</div>
+    <div class="source">Montants fictifs tirés au hasard pour l'entraînement, dans des ordres de grandeur inspirés des comptes nationaux de l'Insee (base 2020).</div>
+  </div>
+
+  <div class="carte">
+    <div class="q"><b>Question 1.</b> Calculez le taux de variation entre <span id="a1"></span> et <span id="a2"></span> (en %, arrondir à <b>une décimale</b>, indiquer le signe − si baisse) :
+      <input type="text" id="rep1" autocomplete="off"> %</div>
+    <div class="q"><b>Question 2.</b> Quelle est la phrase de lecture correcte de ce résultat ?</div>
+    <div class="lecture" id="qcm"></div>
+    <div class="q"><b>Question 3.</b> Le taux de croissance de cette grandeur passe de <span id="t1"></span> % en <span id="y1"></span> à <span id="t2"></span> % en <span id="y2"></span>. De combien a-t-il varié (signe − en cas de baisse) ?
+      <input type="text" id="rep3" autocomplete="off"> <select id="unite3"><option value="">choisir l'unité</option><option value="pts">point(s) de pourcentage</option><option value="pc">%</option></select></div>
+    <button onclick="corriger()">Corriger</button>
+    <button class="sec" onclick="nouvelExo()">Nouvel exercice</button>
+    <span class="score" id="score"></span>
+    <div class="feedback" id="fb"></div>
+  </div>
+</div>
+
+<script>
+let vd = 0, va = 0, taux = 0, an1 = 0, an2 = 0, bonneReponseQCM = 0;
+let tA = 0, tB = 0, deltaPts = 0, reussites = 0, tentatives = 0;
+let essaye = false, reussi = false, vu = false, lastCorr = '';
+const GRANDEURS = [
+  "PIB d'un pays en volume (en milliards d'euros constants)",
+  "Valeur ajoutée d'une branche d'activité (en milliards d'euros)",
+  "Exportations d'un pays (en milliards d'euros)",
+  "Investissement (FBCF) d'un pays (en milliards d'euros)",
+];
+let grandeur = "";
+
+function alea(min, max, dec = 1) {
+  const v = Math.random() * (max - min) + min;
+  return Math.round(v * Math.pow(10, dec)) / Math.pow(10, dec);
+}
+function fmt(x, dec = 1) { return x.toFixed(dec).replace(".", ","); }
+function lireNombre(s) {
+  if (!s) return NaN;
+  return parseFloat(s.replace(/[\u2212\u2013]/g, "-").replace(",", ".").replace(/\s/g, "").replace("+", ""));
+}
+
+function nouvelExo() {
+  essaye = false; reussi = false; vu = false; lastCorr = '';
+  grandeur = GRANDEURS[Math.floor(Math.random() * GRANDEURS.length)];
+  an1 = 2018 + Math.floor(Math.random() * 6);
+  an2 = an1 + 1 + Math.floor(Math.random() * 2);
+  vd = alea(800, 2800, 1);
+  // Une fois sur trois environ : une baisse, pour travailler le signe négatif
+  const evolution = Math.random() < 0.35 ? alea(-9, -0.5, 1) : alea(0.5, 8, 1);
+  va = Math.round(vd * (1 + evolution / 100) * 10) / 10;
+  taux = (va - vd) / vd * 100;
+
+  document.getElementById("titreData").textContent = grandeur;
+  document.getElementById("tbl").innerHTML =
+    `<tr><th>Année</th><th>${an1}</th><th>${an2}</th></tr>
+     <tr><td>Valeur</td><td class="num">${fmt(vd)}</td><td class="num">${fmt(va)}</td></tr>`;
+  document.getElementById("a1").textContent = an1;
+  document.getElementById("a2").textContent = an2;
+
+  const sens = taux >= 0 ? "augmenté" : "diminué";
+  const absT = fmt(Math.abs(taux));
+  const bonne = `Entre ${an1} et ${an2}, cette grandeur a ${sens} d'environ ${absT} %.`;
+  const fausses = [
+    `En ${an2}, cette grandeur représente ${absT} % du total.`,
+    taux >= 0
+      ? `Entre ${an1} et ${an2}, cette grandeur a été multipliée par ${absT}.`
+      : `Entre ${an1} et ${an2}, cette grandeur a augmenté de ${absT} %.`,
+  ];
+  const options = [bonne, ...fausses].map((t, i) => ({ t, bonne: i === 0 })).sort(() => Math.random() - 0.5);
+  bonneReponseQCM = options.findIndex(o => o.bonne);
+  document.getElementById("qcm").innerHTML = options.map((o, i) =>
+    `<label><input type="radio" name="qcm" value="${i}"> ${o.t}</label>`).join("");
+
+  tA = alea(0.4, 3.5, 1);
+  deltaPts = alea(-1.5, 1.5, 1);
+  if (Math.abs(deltaPts) < 0.2) deltaPts = 0.4;
+  tB = Math.round((tA + deltaPts) * 10) / 10;
+  deltaPts = Math.round((tB - tA) * 10) / 10;
+  if (deltaPts === 0) { tB = Math.round((tA + 0.4) * 10) / 10; deltaPts = 0.4; }
+  document.getElementById("t1").textContent = fmt(tA);
+  document.getElementById("t2").textContent = fmt(tB);
+  document.getElementById("y1").textContent = an2;
+  document.getElementById("y2").textContent = an2 + 1;
+
+  ["rep1", "rep3"].forEach(id => { const e = document.getElementById(id); e.value = ""; e.className = ""; });
+  document.getElementById("unite3").value = "";
+  document.getElementById("fb").className = "feedback";
+  document.getElementById("fb").innerHTML = "";
+}
+
+function corriger() {
+  if (!essaye) { essaye = true; tentatives++; }
+  let toutBon = true;
+  let msg = "";
+
+  const r1 = lireNombre(document.getElementById("rep1").value);
+  const bon1 = !isNaN(r1) && Math.abs(r1 - taux) <= 0.15;
+  document.getElementById("rep1").className = bon1 ? "ok" : "ko";
+  if (!bon1) {
+    toutBon = false;
+    msg += `<br>• Q1 : [(${fmt(va)} − ${fmt(vd)}) ÷ ${fmt(vd)}] × 100 ≈ <b>${fmt(taux)} %</b>. On divise toujours par la valeur de départ (${fmt(vd)}).`;
+  }
+
+  const choix = document.querySelector('input[name="qcm"]:checked');
+  const bon2 = choix && parseInt(choix.value) === bonneReponseQCM;
+  if (!bon2) {
+    toutBon = false;
+    msg += `<br>• Q2 : un taux de variation se lit « a augmenté / diminué de X % entre [date 1] et [date 2] ». Ce n'est ni une part, ni un coefficient multiplicateur.`;
+  }
+
+  const r3 = lireNombre(document.getElementById("rep3").value);
+  const u3 = document.getElementById("unite3").value;
+  const bon3 = !isNaN(r3) && Math.abs(r3 - deltaPts) <= 0.05 && u3 === "pts";
+  const signeSeul = !isNaN(r3) && !bon3 && Math.abs(Math.abs(r3) - Math.abs(deltaPts)) <= 0.05 && u3 === "pts";
+  document.getElementById("rep3").className = bon3 ? "ok" : "ko";
+  if (!bon3) {
+    toutBon = false;
+    msg += `<br>• Q3 : ${fmt(tB)} − ${fmt(tA)} = <b>${fmt(deltaPts)} point(s) de pourcentage</b>. L'écart entre deux taux s'exprime en points, jamais en %.` + (signeSeul ? " Attention au signe : le taux a " + (deltaPts < 0 ? "baissé." : "augmenté.") : "");
+  }
+
+  const fb = document.getElementById("fb");
+  if (toutBon) {
+    if (!reussi && !vu) { reussi = true; reussites++; }
+    fb.className = "feedback bon";
+    fb.innerHTML = "<b>Bravo, tout est juste !</b> Calcul, lecture et points de pourcentage : les trois compétences de la fiche sont maîtrisées.";
+  } else {
+    fb.className = "feedback mauvais";
+    lastCorr = "<b>Correction.</b> Rappel : taux = [(arrivée − départ) ÷ départ] × 100.<u><br>Corrections :</u>" + msg;
+    const nKo = document.querySelectorAll('input.ko').length;
+    const qf = !bon2;
+    fb.innerHTML = '<div class="resume"><b>Pas encore.</b> ' + (nKo ? nKo + ' case(s) en rouge à revoir' : '') + (nKo && qf ? ', et ' : '') + (qf ? 'la phrase de lecture n\'est pas la bonne' : '') + '. Corrige puis clique de nouveau sur « Corriger », ou consulte la correction.</div>' + '<button class="sec" onclick="voirCorrection()">Voir la correction</button>';
+  }
+  document.getElementById("score").textContent = `Exercices réussis sans voir la correction : ${reussites} sur ${tentatives}`;
+}
+
+function voirCorrection() {
+  vu = true;
+  const fb = document.getElementById("fb");
+  fb.className = "feedback mauvais";
+  fb.innerHTML = lastCorr;
+}
+
+function verifDefile() {
+  const d = document.querySelector('.defile');
+  document.getElementById('glisse').style.display = d.scrollWidth > d.clientWidth + 2 ? 'block' : 'none';
+}
+window.addEventListener('resize', verifDefile);
+
+nouvelExo();
+verifDefile();
+</script>
+</body>
+</html>

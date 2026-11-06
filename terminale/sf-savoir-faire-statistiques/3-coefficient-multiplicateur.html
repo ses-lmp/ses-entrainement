@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiche outil n°3 - Le coefficient multiplicateur</title>
+<meta name="chapitre" content="Savoir-faire statistiques (fiches outils)">
+<meta name="description" content="Calculer un coefficient multiplicateur et le convertir en taux de variation, dans les deux sens.">
+<style>
+  :root { --bleu:#DDEBF7; --vert:#E2EFDA; --rouge:#FBDBD7; --gris:#F2F2F2; --fonce:#1F3864; }
+  * { box-sizing:border-box; }
+  body { font-family:Arial, sans-serif; margin:0; background:#fafafa; color:#222; }
+  .wrap { max-width:860px; margin:0 auto; padding:20px; }
+  h1 { color:var(--fonce); font-size:1.5rem; margin:10px 0 4px; }
+  .sous { color:#555; font-style:italic; margin-bottom:16px; }
+  .carte { background:#fff; border:1px solid #ccc; border-radius:8px; padding:16px 20px; margin-bottom:16px; }
+  .essentiel { background:var(--bleu); border:1px solid #9dc3e6; }
+  .essentiel h2 { margin:0 0 8px; font-size:1.05rem; color:var(--fonce); }
+  .donnees { background:var(--gris); }
+  table { border-collapse:collapse; width:100%; margin:8px 0; }
+  th,td { border:1px solid #808080; padding:6px 10px; font-size:.95rem; }
+  th { background:#d9d9d9; }
+  td.num { text-align:right; }
+  input[type=text] { width:100px; padding:5px; border:1px solid #999; border-radius:4px; font-size:1rem; text-align:right; }
+  input.ok { background:var(--vert); border-color:#538135; }
+  input.ko { background:var(--rouge); border-color:#c00; }
+  button { background:var(--fonce); color:#fff; border:none; border-radius:6px; padding:10px 18px; font-size:1rem; cursor:pointer; margin-right:10px; margin-top:6px; }
+  button.sec { background:#767171; }
+  .feedback { margin-top:12px; padding:12px 14px; border-radius:6px; display:none; font-size:.95rem; }
+  .feedback.bon { display:block; background:var(--vert); border:1px solid #538135; }
+  .feedback.mauvais { display:block; background:var(--rouge); border:1px solid #c00; }
+  .source { font-size:.8rem; color:#555; font-style:italic; }
+  .score { font-weight:bold; color:var(--fonce); }
+  .q { margin-top:12px; }
+  .retour { display:inline-block; margin-bottom:6px; color:#2E75B6; text-decoration:none; }
+  .defile { overflow-x:auto; }
+  .resume { margin-bottom:8px; }
+  .glisse { display:none; font-size:.8rem; color:#2E75B6; margin-bottom:4px; }
+  @media (max-width:520px) { .wrap { padding:12px; } .carte { padding:12px; } th,td { padding:4px 4px; } input[type=text] { width:58px; font-size:.9rem; padding:4px; } th,td { font-size:.82rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="retour" href="../../index.html">&larr; Tous les exercices</a>
+  <h1>Entraînement autonome n°3 - Le coefficient multiplicateur</h1>
+  <div class="sous">Fiche outil n°3 · Terminale SES · Les valeurs changent à chaque nouvel exercice.</div>
+
+  <div class="carte essentiel">
+    <h2>Rappel de la méthode</h2>
+    <b>CM = valeur d'arrivée ÷ valeur de départ</b> (sans unité, sans ×100).<br>
+    Lecture : « la grandeur a été multipliée par X » ; si CM &lt; 1, elle a diminué.<br>
+    Conversions : <b>CM = 1 + taux ÷ 100</b> et <b>taux = (CM − 1) × 100</b>. Exemple : ×2 = +100 %.
+  </div>
+
+  <div class="carte donnees">
+    <b id="titreData"></b>
+    <div class="defile"><table id="tbl"></table></div><div class="glisse" id="glisse">&harr; Fais glisser le tableau pour voir toutes les colonnes.</div>
+    <div class="source">Montants fictifs tirés au hasard pour l'entraînement, dans des ordres de grandeur inspirés des comptes nationaux de l'Insee (base 2020).</div>
+  </div>
+
+  <div class="carte">
+    <div class="q"><b>Question 1.</b> Calculez le coefficient multiplicateur entre <span id="a1"></span> et <span id="a2"></span> (arrondir à <b>deux décimales</b>) :
+      <input type="text" id="rep1" autocomplete="off"></div>
+    <div class="q"><b>Question 2.</b> Convertissez ce CM en taux de variation (en %, arrondir à l'entier, signe − si baisse) :
+      <input type="text" id="rep2" autocomplete="off"> %</div>
+    <div class="q"><b>Question 3 (conversion inverse).</b> Une grandeur <span id="sensQ3"></span> de <span id="tauxDonne"></span> %. Par combien a-t-elle été multipliée ?
+      <input type="text" id="rep3" autocomplete="off"></div>
+    <button onclick="corriger()">Corriger</button>
+    <button class="sec" onclick="nouvelExo()">Nouvel exercice</button>
+    <span class="score" id="score"></span>
+    <div class="feedback" id="fb"></div>
+  </div>
+</div>
+
+<script>
+let vd = 0, va = 0, cm = 0, an1 = 0, an2 = 0, tauxQ3 = 0, cmQ3 = 0, reussites = 0, tentatives = 0;
+let essaye = false, reussi = false, vu = false, lastCorr = '';
+const CONTEXTES = [
+  "Valeur ajoutée de l'hébergement-restauration d'un pays (en milliards d'euros)",
+  "PIB d'un pays en volume (en milliards d'euros constants)",
+  "Production d'une branche industrielle (en milliards d'euros)",
+  "Consommation de services numériques (en milliards d'euros)",
+];
+
+function alea(min, max, dec = 1) {
+  const v = Math.random() * (max - min) + min;
+  return Math.round(v * Math.pow(10, dec)) / Math.pow(10, dec);
+}
+function fmt(x, dec = 1) { return x.toFixed(dec).replace(".", ","); }
+function lireNombre(s) {
+  if (!s) return NaN;
+  return parseFloat(s.replace(/[\u2212\u2013]/g, "-").replace(",", ".").replace(/\s/g, "").replace("+", "").replace("×", "").replace("x", ""));
+}
+
+function nouvelExo() {
+  essaye = false; reussi = false; vu = false; lastCorr = '';
+  const contexte = CONTEXTES[Math.floor(Math.random() * CONTEXTES.length)];
+  an1 = 2000 + Math.floor(Math.random() * 18);
+  an2 = an1 + 3 + Math.floor(Math.random() * 15);
+  vd = alea(20, 400, 1);
+  // Un tiers des cas : CM < 1 pour travailler la baisse ; sinon forte hausse (le CM brille sur longue période)
+  const pib = contexte.indexOf("PIB") === 0;
+  cm = pib ? alea(1.1, 2.2, 2) : (Math.random() < 0.33 ? alea(0.55, 0.95, 2) : alea(1.2, 3.5, 2));
+  va = Math.round(vd * cm * 10) / 10;
+  cm = va / vd; // recalcul exact après arrondi de va
+
+  document.getElementById("titreData").textContent = contexte;
+  document.getElementById("tbl").innerHTML =
+    `<tr><th>Année</th><th>${an1}</th><th>${an2}</th></tr>
+     <tr><td>Valeur</td><td class="num">${fmt(vd)}</td><td class="num">${fmt(va)}</td></tr>`;
+  document.getElementById("a1").textContent = an1;
+  document.getElementById("a2").textContent = an2;
+
+  const TAUX = [25, 50, 75, 100, 150, 200, 300, -10, -20, -25, -50];
+  tauxQ3 = TAUX[Math.floor(Math.random() * TAUX.length)];
+  cmQ3 = 1 + tauxQ3 / 100;
+  document.getElementById("tauxDonne").textContent = Math.abs(tauxQ3);
+  document.getElementById("sensQ3").textContent = tauxQ3 < 0 ? "diminue" : "augmente";
+
+  ["rep1", "rep2", "rep3"].forEach(id => { const e = document.getElementById(id); e.value = ""; e.className = ""; });
+  document.getElementById("fb").className = "feedback";
+  document.getElementById("fb").innerHTML = "";
+}
+
+function corriger() {
+  if (!essaye) { essaye = true; tentatives++; }
+  let toutBon = true;
+  let msg = "";
+  const tauxVrai = (cm - 1) * 100;
+
+  const r1 = lireNombre(document.getElementById("rep1").value);
+  const bon1 = !isNaN(r1) && Math.abs(r1 - cm) <= 0.015;
+  document.getElementById("rep1").className = bon1 ? "ok" : "ko";
+  if (!bon1) {
+    toutBon = false;
+    msg += `<br>• Q1 : CM = ${fmt(va)} ÷ ${fmt(vd)} ≈ <b>${fmt(cm, 2)}</b>. Pas de ×100 : un CM n'est pas un pourcentage.`;
+  }
+
+  const r2 = lireNombre(document.getElementById("rep2").value);
+  const bon2 = !isNaN(r2) && Math.abs(r2 - tauxVrai) <= 1.2;
+  document.getElementById("rep2").className = bon2 ? "ok" : "ko";
+  if (!bon2) {
+    toutBon = false;
+    msg += `<br>• Q2 : taux = (${fmt(cm, 2)} − 1) × 100 ≈ <b>${fmt(tauxVrai, 0)} %</b>. On retranche toujours 1 (la valeur de départ) avant de multiplier par 100 : ×2,47 = +147 %, pas +247 %.`;
+  }
+
+  const r3 = lireNombre(document.getElementById("rep3").value);
+  const bon3 = !isNaN(r3) && Math.abs(r3 - cmQ3) <= 0.015;
+  document.getElementById("rep3").className = bon3 ? "ok" : "ko";
+  if (!bon3) {
+    toutBon = false;
+    msg += tauxQ3 > 0
+      ? `<br>• Q3 : CM = 1 + ${tauxQ3} ÷ 100 = <b>${fmt(cmQ3, 2)}</b>. Une hausse de ${tauxQ3} % ne donne jamais un CM de ${tauxQ3} !`
+      : `<br>• Q3 : CM = 1 + (${tauxQ3}) ÷ 100 = 1 − ${Math.abs(tauxQ3)} ÷ 100 = <b>${fmt(cmQ3, 2)}</b>. Une baisse donne toujours un CM inférieur à 1.`;
+  }
+
+  const fb = document.getElementById("fb");
+  if (toutBon) {
+    if (!reussi && !vu) { reussi = true; reussites++; }
+    fb.className = "feedback bon";
+    fb.innerHTML = "<b>Bravo, tout est juste !</b> Calcul du CM et conversions dans les deux sens : c'est exactement ce qui est attendu au bac.";
+  } else {
+    fb.className = "feedback mauvais";
+    lastCorr = "<b>Correction.</b> Rappels : CM = arrivée ÷ départ ; taux = (CM − 1) × 100 ; CM = 1 + taux ÷ 100.<u><br>Corrections :</u>" + msg;
+    const nKo = document.querySelectorAll('input.ko').length;
+    const qf = false;
+    fb.innerHTML = '<div class="resume"><b>Pas encore.</b> ' + (nKo ? nKo + ' case(s) en rouge à revoir' : '') + (nKo && qf ? ', et ' : '') + (qf ? 'la phrase de lecture n\'est pas la bonne' : '') + '. Corrige puis clique de nouveau sur « Corriger », ou consulte la correction.</div>' + '<button class="sec" onclick="voirCorrection()">Voir la correction</button>';
+  }
+  document.getElementById("score").textContent = `Exercices réussis sans voir la correction : ${reussites} sur ${tentatives}`;
+}
+
+function voirCorrection() {
+  vu = true;
+  const fb = document.getElementById("fb");
+  fb.className = "feedback mauvais";
+  fb.innerHTML = lastCorr;
+}
+
+function verifDefile() {
+  const d = document.querySelector('.defile');
+  document.getElementById('glisse').style.display = d.scrollWidth > d.clientWidth + 2 ? 'block' : 'none';
+}
+window.addEventListener('resize', verifDefile);
+
+nouvelExo();
+verifDefile();
+</script>
+</body>
+</html>
