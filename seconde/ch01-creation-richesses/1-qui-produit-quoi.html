@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bien ou service, marchand ou non marchand, qui produit ?</title>
+<meta name="chapitre" content="Chapitre 1 : Comment crée-t-on des richesses et comment les mesure-t-on ?">
+<meta name="description" content="Trois séries courtes, différentes à chaque tirage : bien ou service, production marchande ou non marchande, entreprise, administration ou économie sociale et solidaire.">
+<style>
+  :root { --bf:#1F4E79; --b:#2E75B6; --def:#DDEBF7; --corr:#E2EFDA; --ret:#DCE6F1; --jaune:#FFF2CC; --vert:#548235; --rouge:#C00000; --gris:#595959; }
+  * { box-sizing:border-box; }
+  body { font-family:Arial, Helvetica, sans-serif; margin:0; background:#f7f9fc; color:#222; font-size:16px; line-height:1.4; }
+  .wrap { max-width:1000px; margin:0 auto; padding:14px; }
+  a.retour { color:var(--b); text-decoration:none; font-size:14px; }
+  h1 { color:var(--bf); font-size:22px; margin:8px 0 6px; }
+  .oa { background:var(--def); border-left:5px solid var(--bf); padding:8px 12px; margin:10px 0; font-size:14px; }
+  .onglets { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0 8px; }
+  .onglets button { flex:1; min-width:150px; }
+  .onglets button.actif { background:var(--bf); color:#fff; }
+  select, button { font:inherit; font-size:15px; padding:7px 12px; border-radius:6px; border:1px solid var(--b); background:#fff; color:var(--bf); cursor:pointer; }
+  button.primaire { background:var(--b); color:#fff; }
+  button:disabled { opacity:.45; cursor:default; }
+  .consigne { background:var(--ret); border:1px solid var(--bf); padding:8px 12px; font-size:14px; margin-bottom:10px; }
+  .barre { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:10px 0; }
+  .score { margin-left:auto; font-weight:bold; color:var(--bf); font-size:14px; }
+  .pool { min-height:56px; background:#fff; border:2px dashed #b9c7d8; border-radius:8px; padding:8px; display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  .pool.vide::after { content:"Toutes les étiquettes sont placées."; color:var(--gris); font-size:14px; align-self:center; }
+  .cols { display:grid; gap:10px; }
+  .col { background:#fff; border:2px solid var(--b); border-radius:8px; min-height:120px; display:flex; flex-direction:column; }
+  .col.cible { box-shadow:0 0 0 3px #9cc3e8; }
+  .col h3 { margin:0; padding:6px 8px; background:var(--b); color:#fff; font-size:14px; border-radius:5px 5px 0 0; }
+  .col .zone { flex:1; padding:6px; display:flex; flex-wrap:wrap; gap:6px; align-content:flex-start; cursor:pointer; }
+  .chip { background:var(--def); border:1px solid var(--b); color:#123; padding:6px 10px; border-radius:16px; font-size:14px; cursor:grab; user-select:none; touch-action:manipulation; }
+  .chip.sel { background:var(--bf); color:#fff; }
+  .chip.ok { background:var(--corr); border-color:var(--vert); cursor:default; }
+  .chip.faux { background:#fde2e2; border-color:var(--rouge); }
+  .msg { margin:10px 0; padding:8px 12px; border-radius:6px; font-size:15px; display:none; }
+  .msg.info { display:block; background:var(--jaune); border:1px solid #BF8F00; }
+  .msg.bravo { display:block; background:var(--corr); border:1px solid var(--vert); }
+  .correction { display:none; background:var(--corr); border:1px solid var(--vert); border-radius:8px; padding:10px 14px; margin-top:12px; }
+  .correction h3 { color:var(--vert); margin:0 0 8px; font-size:16px; }
+  .correction ul { margin:0; padding-left:20px; } .correction li { margin-bottom:6px; font-size:14px; }
+  .rappel { background:var(--def); border:1px solid var(--b); border-radius:8px; padding:8px 12px; margin-top:14px; font-size:14px; }
+  .rappel summary { cursor:pointer; color:var(--bf); font-weight:bold; }
+  @media (max-width:600px) { h1 { font-size:19px; } .onglets button { min-width:100%; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="retour" href="../../index.html">&larr; Tous les exercices</a>
+  <h1>Bien ou service ? Marchand ou non marchand ? Qui produit ?</h1>
+  <div class="oa"><b>Objectif d'apprentissage :</b> Savoir illustrer la diversité des producteurs (entreprises, administrations, économie sociale et solidaire) et connaître la distinction entre production marchande et non marchande.</div>
+
+  <div class="onglets" id="onglets"></div>
+  <div class="consigne" id="consigne"></div>
+  <div class="pool" id="pool"></div>
+  <div class="cols" id="cols"></div>
+
+  <div class="barre">
+    <button class="primaire" id="verifier">Vérifier</button>
+    <button id="voir">Voir la correction</button>
+    <button id="nouveau">Nouveau tirage</button>
+    <span class="score" id="score"></span>
+  </div>
+  <div class="msg" id="msg"></div>
+  <div class="correction" id="correction"><h3>Correction</h3><ul id="liste"></ul></div>
+
+  <details class="rappel"><summary>Rappel des définitions</summary>
+    <p><b>Bien :</b> produit matériel, que l'on peut toucher et stocker.<br>
+    <b>Service :</b> production immatérielle, qui ne peut pas être stockée et qui est consommée au moment où elle est produite.<br>
+    <b>Production marchande :</b> production vendue sur un marché à un prix qui couvre au moins 50 % des coûts de production.<br>
+    <b>Production non marchande :</b> production fournie gratuitement ou presque gratuitement (à un prix inférieur à 50 % des coûts de production).<br>
+    <b>Entreprise :</b> organisation qui produit des biens ou des services pour les vendre et réaliser un profit.<br>
+    <b>Administration publique :</b> organisation publique qui produit des services non marchands pour l'intérêt général, financée principalement par les impôts et les cotisations.<br>
+    <b>Économie sociale et solidaire :</b> associations, coopératives, mutuelles : elles produisent pour répondre aux besoins de leurs membres ou de la société, sans rechercher le profit individuel.</p>
+  </details>
+</div>
+
+<script>
+const NB = 8; // étiquettes par tirage
+
+// ---------- Série 1 : bien ou service ----------
+// Les 10 premières étiquettes forment 5 paires piège (bien / service correspondant) : 3 paires sont tirées à chaque fois.
+const S1 = [
+  ['Une voiture','bien','Un objet matériel que l\'on peut toucher et stocker : un bien.'],
+  ['La location d\'une voiture pour un week-end','service','On n\'achète pas la voiture mais son usage pendant un temps : un service.'],
+  ['Un livre acheté en librairie','bien','Un objet matériel : un bien.'],
+  ['Le prêt d\'un livre par la médiathèque','service','On obtient l\'usage du livre, pas le livre lui-même : un service.'],
+  ['Une baguette de pain','bien','Un objet matériel, qui se stocke (même peu de temps) : un bien.'],
+  ['Un repas servi au restaurant','service','On paie la préparation et le service à table, consommés sur place : un service.'],
+  ['Un smartphone','bien','Un objet matériel : un bien.'],
+  ['Le forfait téléphonique mensuel','service','L\'accès au réseau ne se touche pas et ne se stocke pas : un service.'],
+  ['Un vélo','bien','Un objet matériel : un bien.'],
+  ['La réparation d\'un vélo','service','Une activité réalisée pour le client, consommée au moment où elle est produite : un service.'],
+  ['Une paire de baskets','bien','Un objet matériel : un bien.'],
+  ['Une coupe de cheveux','service','Une prestation consommée au moment où elle est réalisée : un service.'],
+  ['Une console de jeux','bien','Un objet matériel : un bien.'],
+  ['Une place de concert','service','On achète le droit d\'assister au concert, consommé pendant le spectacle : un service.'],
+  ['Une boîte de médicaments','bien','Un objet matériel : un bien.'],
+  ['Une consultation chez le médecin','service','Une prestation immatérielle : un service.'],
+  ['Un trajet en bus','service','Le transport est consommé pendant le trajet : un service.'],
+  ['Une nuit à l\'hôtel','service','On paie l\'hébergement pour une nuit, pas la chambre : un service.'],
+  ['Un ordinateur portable','bien','Un objet matériel : un bien.'],
+  ['Un contrat d\'assurance pour une voiture','service','L\'assurance est une protection, immatérielle : un service.'],
+  ['Un cours de natation','service','Une prestation consommée pendant le cours : un service.'],
+  ['Un jean','bien','Un objet matériel : un bien.'],
+];
+
+// ---------- Série 2 : marchande ou non marchande ----------
+const S2 = [
+  ['Une place de cinéma vendue par un cinéma privé','m','Vendue à un prix qui couvre les coûts : production marchande.'],
+  ['Une coupe de cheveux chez un coiffeur','m','Vendue à un prix qui couvre les coûts : production marchande.'],
+  ['Un billet de train vendu par la SNCF','m','La SNCF est une entreprise publique, mais elle vend ses billets à un prix qui couvre ses coûts : production marchande. Public ne veut pas dire non marchand.'],
+  ['Un contrat d\'assurance vendu par une mutuelle','m','Une mutuelle fait partie de l\'économie sociale et solidaire, mais elle vend ses contrats à un prix qui couvre ses coûts : production marchande.'],
+  ['Les fruits vendus par une coopérative agricole','m','La coopérative appartient à l\'économie sociale et solidaire, mais elle vend sa production : production marchande.'],
+  ['La réparation d\'une voiture dans un garage','m','Vendue à un prix qui couvre les coûts : production marchande.'],
+  ['Un cours dans un lycée public','nm','Gratuit pour l\'élève, financé par les impôts : production non marchande.'],
+  ['Le service de la police nationale','nm','Gratuit pour les usagers, financé par les impôts : production non marchande.'],
+  ['Le prêt de livres par une médiathèque municipale','nm','Gratuit ou presque, financé par la commune : production non marchande.'],
+  ['Un repas distribué par les Restos du cœur','nm','Gratuit pour les bénéficiaires, financé par les dons et les subventions : production non marchande.'],
+  ['Les soins aux urgences d\'un hôpital public','nm','Le patient paie très peu ou rien ; l\'essentiel est financé par l\'Assurance maladie : production non marchande.'],
+  ['La délivrance d\'une première carte d\'identité','nm','Gratuite, réalisée par une administration publique : production non marchande.'],
+];
+// Cas chiffrés générés (montants fictifs)
+const CAS = ['Un repas de cantine', 'Une entrée à la piscine', 'Un cours de musique', 'Un ticket de transport', 'Une séance de sport', 'Une place de théâtre', 'Une consultation', 'Un stage de vacances'];
+function arr2(x) { return (Math.round(x * 100) / 100).toFixed(2).replace('.', ','); }
+function casChiffre(nom) {
+  const cout = [6, 8, 10, 12, 15, 20, 25, 30, 40][Math.floor(Math.random() * 9)];
+  const marchand = Math.random() < 0.5;
+  const pct = marchand ? 60 + Math.floor(Math.random() * 7) * 10 : 10 + Math.floor(Math.random() * 4) * 10; // 60-120 % ou 10-40 %
+  const prix = cout * pct / 100;
+  return [`${nom} : prix ${arr2(prix)} €, coût de production ${arr2(cout)} € (montants fictifs)`, marchand ? 'm' : 'nm',
+    `${arr2(prix)} ÷ ${arr2(cout)} = ${pct} % : le prix couvre ${marchand ? 'plus' : 'moins'} de 50 % des coûts, donc production ${marchand ? 'marchande' : 'non marchande'}.`];
+}
+
+// ---------- Série 3 : qui produit ? ----------
+const S3 = [
+  ['Une boulangerie','ent','Elle vend son pain pour réaliser un profit : une entreprise.'],
+  ['Un garage automobile','ent','Il vend ses réparations pour réaliser un profit : une entreprise.'],
+  ['Un artisan plombier','ent','Il vend ses services pour en tirer un revenu : une entreprise (individuelle).'],
+  ['Une chaîne de magasins de sport','ent','Elle vend pour réaliser un profit : une entreprise.'],
+  ['La SNCF','ent','Elle appartient à l\'État, mais elle vend ses services : c\'est une entreprise publique, pas une administration.'],
+  ['Une start-up qui développe une application','ent','Elle cherche à vendre et à réaliser un profit : une entreprise.'],
+  ['La mairie','apu','Organisation publique financée par les impôts, au service de l\'intérêt général : une administration publique.'],
+  ['Un lycée public','apu','Il fournit gratuitement un service d\'enseignement financé par les impôts : une administration publique.'],
+  ['Un hôpital public','apu','Il soigne, financé surtout par l\'Assurance maladie : une administration publique.'],
+  ['La police nationale','apu','Service gratuit financé par les impôts : une administration publique.'],
+  ['L\'Assurance maladie (Sécurité sociale)','apu','Elle rembourse les soins grâce aux cotisations sociales : une administration publique.'],
+  ['Les Restos du cœur','ess','Une association qui aide les plus démunis sans chercher le profit : économie sociale et solidaire.'],
+  ['Une mutuelle d\'assurance','ess','Elle appartient à ses adhérents et ne cherche pas le profit individuel : économie sociale et solidaire.'],
+  ['Une coopérative agricole','ess','Elle appartient aux agriculteurs qui en sont membres : économie sociale et solidaire.'],
+  ['Le club de football amateur du quartier','ess','Une association sportive sans but lucratif : économie sociale et solidaire.'],
+  ['Une SCOP (société coopérative dont les salariés sont les associés)','ess','Une coopérative détenue par ses salariés : économie sociale et solidaire.'],
+  ['Le Secours populaire','ess','Une association de solidarité : économie sociale et solidaire.'],
+];
+
+const SERIES = [
+  { nom:'1. Bien ou service ?', consigne:'Range chaque production : est-ce un bien ou un service ?', cols:[['bien','Bien'],['service','Service']], tirer:() => { const paires = melanger([0, 2, 4, 6, 8]).slice(0, 3).flatMap(i => [S1[i], S1[i + 1]]); return paires.concat(melanger(S1.slice(10)).slice(0, NB - 6)); } },
+  { nom:'2. Marchande ou non marchande ?', consigne:'Range chaque production : marchande ou non marchande ? Pour les cas chiffrés, calcule la part des coûts couverte par le prix.', cols:[['m','Production marchande'],['nm','Production non marchande']], tirer:() => melanger(S2).slice(0, NB - 2).concat(melanger(CAS).slice(0, 2).map(casChiffre)) },
+  { nom:'3. Qui produit ?', consigne:'Range chaque producteur dans sa catégorie.', cols:[['ent','Entreprise'],['apu','Administration publique'],['ess','Économie sociale et solidaire']], tirer:() => { for (let t = 0; t < 50; t++) { const x = melanger(S3).slice(0, NB + 1); if (['ent','apu','ess'].every(c => x.filter(i => i[1] === c).length >= 2)) return x; } return melanger(S3).slice(0, NB + 1); } },
+];
+
+let s = 0, items = [], sel = null, vu = false;
+const reussies = [0, 0, 0], essais = [0, 0, 0];
+const $ = id => document.getElementById(id);
+function melanger(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function charger(i) {
+  s = i; vu = false; sel = null;
+  items = melanger(SERIES[s].tirer()).map((it, k) => ({ k, texte:it[0], rep:it[1], just:it[2], place:null, ok:false, faux:false }));
+  $('consigne').textContent = SERIES[s].consigne;
+  $('msg').className = 'msg'; $('correction').style.display = 'none'; $('voir').disabled = false;
+  [...$('onglets').children].forEach((b, j) => b.classList.toggle('actif', j === s));
+  $('cols').style.gridTemplateColumns = window.innerWidth < 600 ? '1fr' : `repeat(${SERIES[s].cols.length}, 1fr)`;
+  rendre();
+}
+function chip(it) {
+  const d = document.createElement('div');
+  d.className = 'chip' + (it.ok ? ' ok' : '') + (it.faux ? ' faux' : '') + (sel === it.k ? ' sel' : '');
+  d.textContent = it.texte;
+  if (!it.ok) {
+    d.draggable = true;
+    d.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', it.k); sel = it.k; });
+    d.addEventListener('click', e => { e.stopPropagation(); sel = (sel === it.k) ? null : it.k; rendre(); });
+  }
+  return d;
+}
+function deposer(k, place) { const it = items.find(x => x.k === +k); if (!it || it.ok) return; it.place = place; it.faux = false; sel = null; rendre(); }
+function zoneEvents(el, place) {
+  const box = () => el.closest('.col, .pool');
+  el.addEventListener('dragover', e => { e.preventDefault(); box().classList.add('cible'); });
+  el.addEventListener('dragleave', () => box().classList.remove('cible'));
+  el.addEventListener('drop', e => { e.preventDefault(); box().classList.remove('cible'); deposer(e.dataTransfer.getData('text/plain'), place); });
+  el.addEventListener('click', () => { if (sel !== null) deposer(sel, place); });
+}
+function rendre() {
+  const pool = $('pool'); pool.innerHTML = '';
+  items.filter(it => it.place === null).forEach(it => pool.appendChild(chip(it)));
+  pool.classList.toggle('vide', !pool.children.length);
+  const cols = $('cols'); cols.innerHTML = '';
+  SERIES[s].cols.forEach(([id, nom]) => {
+    const col = document.createElement('div'); col.className = 'col';
+    const h = document.createElement('h3'); h.textContent = nom; col.appendChild(h);
+    const z = document.createElement('div'); z.className = 'zone';
+    items.filter(it => it.place === id).forEach(it => z.appendChild(chip(it)));
+    zoneEvents(z, id); col.appendChild(z); cols.appendChild(col);
+  });
+  $('score').textContent = `Séries réussies sans correction : ${reussies.reduce((a, b) => a + b)} sur ${essais.reduce((a, b) => a + b)} essayée${essais.reduce((a, b) => a + b) > 1 ? 's' : ''}`;
+}
+let compte = false;
+function verifier() {
+  const restants = items.filter(it => it.place === null).length;
+  if (restants) { message('info', `Il reste ${restants} étiquette${restants > 1 ? 's' : ''} à placer.`); return; }
+  if (!compte) { essais[s]++; compte = true; }
+  let faux = 0;
+  items.forEach(it => { if (it.place === it.rep) { it.ok = true; it.faux = false; } else { it.faux = true; faux++; } });
+  if (!faux) {
+    if (!vu) { reussies[s]++; message('bravo', 'Bravo, tout est juste ! Lance un nouveau tirage pour t\'entraîner sur d\'autres exemples.'); }
+    else message('info', 'Tout est juste, mais la correction a été consultée : ce tirage ne compte pas dans le score.');
+  } else {
+    message('info', `${faux} étiquette${faux > 1 ? 's sont' : ' est'} mal placée${faux > 1 ? 's' : ''} (en rouge). Déplace-${faux > 1 ? 'les' : 'la'} puis vérifie à nouveau.`);
+  }
+  rendre();
+}
+function voir() {
+  vu = true; if (!compte) { essais[s]++; compte = true; }
+  const noms = Object.fromEntries(SERIES[s].cols);
+  const ul = $('liste'); ul.innerHTML = '';
+  items.forEach(it => { const li = document.createElement('li'); li.innerHTML = `<b></b> &rarr; ${noms[it.rep]}. `; li.querySelector('b').textContent = it.texte; li.append(it.just); ul.appendChild(li); });
+  $('correction').style.display = 'block'; $('voir').disabled = true; rendre();
+}
+function message(type, txt) { const m = $('msg'); m.className = 'msg ' + type; m.textContent = txt; }
+
+SERIES.forEach((x, i) => { const b = document.createElement('button'); b.textContent = x.nom; b.addEventListener('click', () => { compte = false; charger(i); }); $('onglets').appendChild(b); });
+zoneEvents($('pool'), null);
+$('verifier').addEventListener('click', verifier);
+$('voir').addEventListener('click', voir);
+$('nouveau').addEventListener('click', () => { compte = false; charger(s); });
+window.addEventListener('resize', () => { $('cols').style.gridTemplateColumns = window.innerWidth < 600 ? '1fr' : `repeat(${SERIES[s].cols.length}, 1fr)`; });
+charger(0);
+</script>
+</body>
+</html>

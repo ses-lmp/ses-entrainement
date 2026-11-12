@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La recette de la production</title>
+<meta name="chapitre" content="Chapitre 1 : Comment crée-t-on des richesses et comment les mesure-t-on ?">
+<meta name="description" content="Classe les éléments de plusieurs productions : travail, capital fixe, consommations intermédiaires, technologie, ressources naturelles.">
+<style>
+  :root { --bf:#1F4E79; --b:#2E75B6; --def:#DDEBF7; --corr:#E2EFDA; --ret:#DCE6F1; --jaune:#FFF2CC; --vert:#548235; --rouge:#C00000; --gris:#595959; }
+  * { box-sizing:border-box; }
+  body { font-family:Arial, Helvetica, sans-serif; margin:0; background:#f7f9fc; color:#222; font-size:16px; line-height:1.4; }
+  .wrap { max-width:1100px; margin:0 auto; padding:14px; }
+  a.retour { color:var(--b); text-decoration:none; font-size:14px; }
+  h1 { color:var(--bf); font-size:24px; margin:8px 0 6px; }
+  .oa { background:var(--def); border-left:5px solid var(--bf); padding:8px 12px; margin:10px 0; font-size:14px; }
+  .oa b { color:var(--bf); }
+  .consigne { background:var(--ret); border:1px solid var(--bf); padding:8px 12px; font-size:14px; margin-bottom:10px; }
+  .barre { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:10px 0; }
+  select, button { font:inherit; font-size:15px; padding:7px 12px; border-radius:6px; border:1px solid var(--b); background:#fff; color:var(--bf); cursor:pointer; }
+  button.primaire { background:var(--b); color:#fff; }
+  button:disabled { opacity:.45; cursor:default; }
+  .score { margin-left:auto; font-weight:bold; color:var(--bf); }
+  .scenario { background:#fff; border:1px solid #cfd8e3; border-radius:8px; padding:10px 14px; margin-bottom:10px; }
+  .scenario h2 { margin:0 0 4px; font-size:18px; color:var(--b); }
+  .scenario p { margin:0; font-size:15px; }
+  .pool { min-height:56px; background:#fff; border:2px dashed #b9c7d8; border-radius:8px; padding:8px; display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  .pool.vide::after { content:"Toutes les étiquettes sont placées."; color:var(--gris); font-size:14px; align-self:center; }
+  .cols { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  @media (max-width:720px) { .cols { grid-template-columns:repeat(2,1fr); } h1 { font-size:20px; } }
+  @media (max-width:720px) { .col { min-height:80px; } }
+  @media (max-width:330px) { .cols { grid-template-columns:1fr; } }
+  .col { background:#fff; border:2px solid var(--b); border-radius:8px; min-height:110px; display:flex; flex-direction:column; }
+  .col.cible { box-shadow:0 0 0 3px #9cc3e8; }
+  .col h3 { margin:0; padding:6px 8px; background:var(--b); color:#fff; font-size:14px; border-radius:5px 5px 0 0; }
+  .col.non { border-color:var(--gris); } .col.non h3 { background:var(--gris); }
+  .col .zone { flex:1; padding:6px; display:flex; flex-wrap:wrap; gap:6px; align-content:flex-start; cursor:pointer; }
+  .chip { background:var(--def); border:1px solid var(--b); color:#123; padding:6px 10px; border-radius:16px; font-size:14px; cursor:grab; user-select:none; touch-action:manipulation; }
+  .chip.sel { background:var(--bf); color:#fff; }
+  .chip.ok { background:var(--corr); border-color:var(--vert); cursor:default; }
+  .chip.faux { background:#fde2e2; border-color:var(--rouge); }
+  .msg { margin:10px 0; padding:8px 12px; border-radius:6px; font-size:15px; display:none; }
+  .msg.info { display:block; background:var(--jaune); border:1px solid #BF8F00; }
+  .msg.bravo { display:block; background:var(--corr); border:1px solid var(--vert); }
+  .correction { display:none; background:var(--corr); border:1px solid var(--vert); border-radius:8px; padding:10px 14px; margin-top:12px; }
+  .correction h3 { color:var(--vert); margin:0 0 8px; font-size:16px; }
+  .correction ul { margin:0; padding-left:20px; } .correction li { margin-bottom:6px; font-size:14px; }
+  .aide { font-size:13px; color:var(--gris); margin-top:4px; }
+  .rappel { background:var(--def); border:1px solid var(--b); border-radius:8px; padding:8px 12px; margin-top:14px; font-size:14px; }
+  .rappel summary { cursor:pointer; color:var(--bf); font-weight:bold; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="retour" href="../../index.html">&larr; Tous les exercices</a>
+  <h1>La recette de la production</h1>
+  <div class="oa"><b>Objectif d'apprentissage :</b> Savoir que la production résulte de la combinaison de travail, de capital, de technologie et de ressources naturelles.</div>
+  <div class="consigne">Range chaque étiquette dans la bonne colonne. Sur ordinateur, fais-la glisser ; sur téléphone, touche l'étiquette puis touche la colonne.</div>
+
+  <div class="barre">
+    <select id="choix" aria-label="Choisir une production"></select>
+    <button id="hasard">Production au hasard</button>
+    <span class="score" id="score"></span>
+  </div>
+
+  <div class="scenario"><h2 id="titre"></h2><p id="contexte"></p></div>
+  <div class="pool" id="pool"></div>
+  <div class="cols" id="cols"></div>
+
+  <div class="barre">
+    <button class="primaire" id="verifier">Vérifier</button>
+    <button id="voir">Voir la correction</button>
+    <button id="reset">Réinitialiser</button>
+  </div>
+  <div class="msg" id="msg"></div>
+  <div class="correction" id="correction"><h3>Correction</h3><ul id="liste"></ul></div>
+
+  <details class="rappel"><summary>Rappel des définitions</summary>
+    <p><b>Travail :</b> activité humaine rémunérée, manuelle ou intellectuelle, qui contribue à la production.<br>
+    <b>Capital fixe :</b> biens durables utilisés pour produire pendant plusieurs années (bâtiments, machines, ordinateurs).<br>
+    <b>Consommations intermédiaires :</b> biens et services achetés à d'autres producteurs et détruits ou transformés au cours de la production.<br>
+    <b>Technologie :</b> connaissances scientifiques et techniques disponibles à un moment donné.<br>
+    <b>Ressources naturelles :</b> ressources fournies par la nature avant toute transformation, renouvelables ou non.</p>
+  </details>
+</div>
+
+<script>
+const COLS = [
+  { id:'travail', nom:'Travail' },
+  { id:'capital', nom:'Capital fixe' },
+  { id:'ci', nom:'Consommations intermédiaires' },
+  { id:'tech', nom:'Technologie' },
+  { id:'rn', nom:'Ressources naturelles' },
+];
+const NOMS = Object.fromEntries(COLS.map(c => [c.id, c.nom]));
+
+const SCENARIOS = [
+  { titre:'Une boulangerie', contexte:'Un artisan boulanger fabrique et vend chaque jour du pain et des viennoiseries.', items:[
+    ['Le boulanger qui pétrit la pâte','travail','Activité humaine rémunérée : c\'est du travail manuel.'],
+    ['Le four à pain','capital','Il sert chaque jour pendant des années sans être détruit : capital fixe.'],
+    ['La farine','ci','Achetée à un meunier, elle est transformée en pain : consommation intermédiaire.'],
+    ["L'électricité du four",'ci','Achetée et consommée pendant la cuisson, elle disparaît : consommation intermédiaire.'],
+    ['Les connaissances sur la fermentation de la levure','tech','Connaissances scientifiques et techniques : c\'est la technologie.'],
+  ]},
+  { titre:'Un vidéaste', contexte:'Un créateur de contenu écrit, tourne et monte des vidéos qu\'il publie sur une plateforme.', items:[
+    ["L'écriture du script",'travail','Activité humaine, surtout intellectuelle : c\'est du travail.'],
+    ['La caméra','capital','Elle sert pour de nombreuses vidéos pendant plusieurs années : capital fixe.'],
+    ["L'ordinateur de montage",'capital','Il n\'est pas détruit en produisant une vidéo : capital fixe.'],
+    ["L'abonnement mensuel au logiciel de montage",'ci','Un service acheté et payé chaque mois pour produire : consommation intermédiaire.'],
+    ["L'électricité consommée pendant le montage",'ci','Elle disparaît dans la production : consommation intermédiaire.'],
+    ['Les techniques de compression des fichiers vidéo','tech','Connaissances techniques incorporées dans les logiciels : technologie.'],
+  ]},
+  { titre:'Une exploitation céréalière', contexte:'Un agriculteur de la Beauce cultive et récolte du blé.', items:[
+    ['Le conducteur de la moissonneuse-batteuse','travail','Activité humaine rémunérée : travail.'],
+    ['La moissonneuse-batteuse','capital','Machine utilisée pendant de nombreuses récoltes : capital fixe.'],
+    ['Le hangar','capital','Bâtiment durable : capital fixe.'],
+    ['Les semences','ci','Achetées puis plantées, elles sont transformées en blé : consommation intermédiaire.'],
+    ['Le carburant du tracteur','ci','Il est détruit pendant l\'utilisation : consommation intermédiaire.'],
+    ['Le sol de la parcelle','rn','Fourni par la nature : ressource naturelle.'],
+    ['La pluie','rn','Fournie par la nature : ressource naturelle.'],
+    ['Les connaissances en sélection des variétés de blé','tech','Connaissances scientifiques (agronomie, génétique) : technologie.'],
+  ]},
+  { titre:'Un atelier de jeans', contexte:'Un artisan fabrique des jeans haut de gamme dans son atelier en France.', items:[
+    ["L'artisan qui coupe et coud",'travail','Activité humaine rémunérée : travail manuel.'],
+    ['La machine à coudre','capital','Elle sert pour des centaines de jeans : capital fixe.'],
+    ['La table de coupe','capital','Équipement durable : capital fixe.'],
+    ['La toile de denim','ci','Achetée à un fournisseur et transformée en jean : consommation intermédiaire.'],
+    ['Le fil et les boutons','ci','Incorporés dans le jean : consommations intermédiaires.'],
+    ['Les techniques de teinture à l\'indigo','tech','Savoirs techniques disponibles : technologie.'],
+  ]},
+  { titre:'Une application mobile', contexte:'Une entreprise développe et fait fonctionner une application de partage de vidéos.', items:[
+    ['Les développeurs','travail','Activité humaine rémunérée, intellectuelle : travail.'],
+    ['Les modérateurs de contenus','travail','Activité humaine rémunérée : travail.'],
+    ["Les serveurs informatiques de l'entreprise",'capital','Matériel durable qui sert pendant des années : capital fixe.'],
+    ["L'électricité des centres de données",'ci','Consommée en continu, elle disparaît : consommation intermédiaire.'],
+    ["Le logiciel de recommandation développé par l'entreprise",'capital','Un bien de production immatériel, utilisé pendant des années sans être détruit : capital fixe.'],
+    ["Les connaissances en intelligence artificielle",'tech','Connaissances scientifiques et techniques : technologie.'],
+    ["L'eau pompée dans une rivière pour refroidir les serveurs",'rn','Prélevée directement dans la nature : ressource naturelle.'],
+  ]},
+  { titre:'Une livraison de repas', contexte:'Un livreur indépendant livre des repas à domicile grâce à une application.', items:[
+    ['Le livreur qui pédale','travail','Activité humaine rémunérée : travail.'],
+    ['Le vélo du livreur','capital','Il sert pour des milliers de livraisons : capital fixe.'],
+    ['Le smartphone du livreur','capital','Équipement durable : capital fixe.'],
+    ['Le forfait téléphonique mensuel','ci','Service acheté et consommé pour produire : consommation intermédiaire.'],
+    ['Les connaissances qui permettent la géolocalisation par satellite','tech','Connaissances scientifiques et techniques : technologie.'],
+  ]},
+];
+
+const EXTRA = [
+  { titre:'Un ostréiculteur', contexte:'Un ostréiculteur élève des huîtres dans le bassin de Marennes-Oléron.', items:[
+    ["L'ostréiculteur qui retourne les poches",'travail','Activité humaine rémunérée : travail.'],
+    ['La barge de travail','capital','Bateau utilisé pendant des années : capital fixe.'],
+    ['Les tables métalliques posées sur l\'estran','capital','Équipements durables : capital fixe.'],
+    ['Le naissain acheté à une écloserie','ci','Jeunes huîtres achetées à un autre producteur et transformées en huîtres adultes : consommation intermédiaire.'],
+    ['Le gazole de la barge','ci','Détruit pendant l\'utilisation : consommation intermédiaire.'],
+    ['Le plancton dont se nourrissent les huîtres','rn','Fourni par la mer sans intervention humaine : ressource naturelle.'],
+  ]},
+  { titre:'Un paludier', contexte:'Un paludier récolte du sel dans les marais salants de l\'île de Ré.', items:[
+    ['Le paludier qui récolte le sel','travail','Activité humaine rémunérée : travail.'],
+    ['Le las, grand râteau en bois','capital','Outil utilisé pendant de nombreuses saisons : capital fixe.'],
+    ['Les sacs dans lesquels le sel est vendu','ci','Achetés et incorporés au produit vendu : consommation intermédiaire.'],
+    ["L'eau de mer qui entre dans les bassins",'rn','Fournie par la nature : ressource naturelle.'],
+    ['Le soleil et le vent qui font évaporer l\'eau','rn','Fournis par la nature : ressources naturelles.'],
+  ]},
+  { titre:'Un chalutier', contexte:'Un armateur fait pêcher du poisson en haute mer.', items:[
+    ['Les marins-pêcheurs','travail','Activité humaine rémunérée : travail.'],
+    ['Le chalutier','capital','Bateau utilisé pendant des années : capital fixe.'],
+    ['Le gazole du moteur','ci','Détruit pendant la pêche : consommation intermédiaire.'],
+    ['La glace achetée pour conserver le poisson','ci','Achetée et consommée pendant la production : consommation intermédiaire.'],
+    ['Les poissons dans la mer','rn','Ils n\'ont été produits par personne : ressource naturelle.'],
+    ['La physique des ondes, qui permet de repérer les bancs de poissons au sonar','tech','Connaissances scientifiques : technologie (le sonar lui-même est du capital).'],
+  ]},
+  { titre:'Un parc éolien', contexte:'Une entreprise produit de l\'électricité avec des éoliennes en mer.', items:[
+    ['Les techniciens de maintenance','travail','Activité humaine rémunérée : travail.'],
+    ['Les éoliennes','capital','Elles produisent pendant plus de vingt ans : capital fixe.'],
+    ["L'huile de lubrification des turbines",'ci','Achetée et usée au cours de la production : consommation intermédiaire.'],
+    ['Le vent','rn','Fourni par la nature : ressource naturelle renouvelable.'],
+    ["Les connaissances en aérodynamique",'tech','Connaissances scientifiques utilisées pour concevoir les pales : technologie.'],
+  ]},
+  { titre:'Une centrale solaire', contexte:'Une entreprise produit de l\'électricité avec des panneaux photovoltaïques.', items:[
+    ['Les agents qui surveillent la centrale','travail','Activité humaine rémunérée : travail.'],
+    ['Les panneaux solaires','capital','Ils produisent pendant des années : capital fixe.'],
+    ['Les pièces de rechange des onduleurs','ci','Achetées et incorporées à la production : consommation intermédiaire.'],
+    ['Le rayonnement du soleil','rn','Fourni par la nature : ressource naturelle renouvelable.'],
+    ["La physique de l'effet photovoltaïque",'tech','Connaissances scientifiques : technologie.'],
+  ]},
+  { titre:'Une exploitation forestière', contexte:'Une entreprise coupe des arbres dans une forêt qu\'elle gère.', items:[
+    ['Les bûcherons','travail','Activité humaine rémunérée : travail.'],
+    ['Les tronçonneuses et le débardeur','capital','Machines utilisées pendant des années : capital fixe.'],
+    ["L'essence des tronçonneuses",'ci','Détruite pendant l\'utilisation : consommation intermédiaire.'],
+    ['Les arbres de la forêt','rn','Fournis par la nature : ressource naturelle renouvelable si la forêt est gérée durablement.'],
+    ['Les méthodes de gestion durable des forêts','tech','Connaissances scientifiques et techniques : technologie.'],
+  ]},
+  { titre:'Une carrière de granit', contexte:'Une entreprise extrait des blocs de granit d\'une carrière.', items:[
+    ['Les ouvriers de la carrière','travail','Activité humaine rémunérée : travail.'],
+    ['Les pelleteuses','capital','Machines durables : capital fixe.'],
+    ['Les explosifs','ci','Achetés et détruits lors de l\'extraction : consommation intermédiaire.'],
+    ['La roche du gisement','rn','Fournie par la nature : ressource naturelle non renouvelable.'],
+    ['Les connaissances en géologie','tech','Connaissances scientifiques : technologie.'],
+  ]},
+  { titre:'Une usine d\'eau minérale', contexte:'Une entreprise met en bouteille l\'eau d\'une source.', items:[
+    ['Les ouvriers de la ligne d\'embouteillage','travail','Activité humaine rémunérée : travail.'],
+    ["Les machines d'embouteillage",'capital','Machines durables : capital fixe.'],
+    ['Le plastique des bouteilles','ci','Acheté et incorporé au produit : consommation intermédiaire.'],
+    ['Les bouchons','ci','Achetés et incorporés au produit : consommation intermédiaire.'],
+    ["L'eau de la source",'rn','Fournie par la nature : ressource naturelle.'],
+    ['Les procédés de contrôle de la pureté de l\'eau','tech','Connaissances scientifiques (chimie, biologie) : technologie.'],
+  ]},
+  { titre:'Un apiculteur', contexte:'Un apiculteur produit et vend du miel.', items:[
+    ["L'apiculteur",'travail','Activité humaine rémunérée : travail.'],
+    ['Les ruches','capital','Utilisées pendant de nombreuses années : capital fixe.'],
+    ["L'extracteur à miel",'capital','Machine durable : capital fixe.'],
+    ['Les pots en verre','ci','Achetés et incorporés au produit vendu : consommation intermédiaire.'],
+    ['Les fleurs sauvages butinées par les abeilles','rn','Fournies par la nature : ressource naturelle.'],
+  ]},
+  { titre:'Une ferme laitière', contexte:'Un éleveur produit du lait avec un troupeau de vaches.', items:[
+    ["L'éleveur",'travail','Activité humaine rémunérée : travail.'],
+    ['La salle de traite','capital','Équipement durable : capital fixe.'],
+    ['Le foin acheté à un voisin','ci','Acheté à un autre producteur et consommé par les vaches : consommation intermédiaire.'],
+    ['Les visites du vétérinaire','ci','Service acheté pour produire : consommation intermédiaire.'],
+    ["L'herbe qui pousse naturellement dans les prairies",'rn','Fournie par la nature : ressource naturelle.'],
+    ['Les connaissances en génétique animale','tech','Connaissances scientifiques : technologie.'],
+  ]},
+  { titre:'Une brasserie artisanale', contexte:'Une petite entreprise brasse et vend de la bière.', items:[
+    ['Le brasseur','travail','Activité humaine rémunérée : travail.'],
+    ['Les cuves de fermentation','capital','Équipements durables : capital fixe.'],
+    ['Le malt et le houblon','ci','Achetés et transformés en bière : consommations intermédiaires.'],
+    ["L'eau puisée dans le forage de la brasserie",'rn','Prélevée directement dans la nature : ressource naturelle.'],
+    ['Les connaissances sur la fermentation','tech','Connaissances scientifiques (microbiologie) : technologie.'],
+  ]},
+  { titre:'Un domaine viticole', contexte:'Un vigneron produit et met en bouteille son vin.', items:[
+    ['Les vendangeurs','travail','Activité humaine rémunérée : travail.'],
+    ['Le pressoir','capital','Machine utilisée pendant des années : capital fixe.'],
+    ['Les bouteilles et les bouchons','ci','Achetés et incorporés au produit : consommations intermédiaires.'],
+    ['Le sol des vignes','rn','Fourni par la nature : ressource naturelle.'],
+    ['Les connaissances en œnologie','tech','Connaissances scientifiques sur la fabrication du vin : technologie.'],
+  ]},
+  { titre:'Un restaurant', contexte:'Un restaurant prépare et sert des repas.', items:[
+    ['Le cuisinier','travail','Activité humaine rémunérée : travail.'],
+    ['Le serveur','travail','Activité humaine rémunérée : travail.'],
+    ['La cuisine équipée (fourneaux, chambre froide)','capital','Équipements durables : capital fixe.'],
+    ['Les légumes achetés au marché de gros','ci','Achetés et transformés en plats : consommation intermédiaire.'],
+    ['Le gaz des fourneaux','ci','Détruit pendant la cuisson : consommation intermédiaire.'],
+    ['Les techniques de conservation par le froid','tech','Connaissances scientifiques et techniques : technologie.'],
+  ]},
+  { titre:'Un salon de coiffure', contexte:'Une coiffeuse coupe et colore les cheveux de ses clients.', items:[
+    ['La coiffeuse','travail','Activité humaine rémunérée : travail.'],
+    ['Les fauteuils et les bacs à shampoing','capital','Équipements durables : capital fixe.'],
+    ['Le shampoing et les colorations','ci','Achetés et consommés pendant le service : consommations intermédiaires.'],
+    ["L'électricité des sèche-cheveux",'ci','Consommée pendant la production : consommation intermédiaire.'],
+    ['La chimie des colorations','tech','Connaissances scientifiques : technologie.'],
+  ]},
+  { titre:'Un garage automobile', contexte:'Un garage répare et entretient des voitures.', items:[
+    ['Le mécanicien','travail','Activité humaine rémunérée : travail.'],
+    ['Le pont élévateur','capital','Équipement durable : capital fixe.'],
+    ['Les pièces détachées','ci','Achetées et incorporées à la réparation : consommation intermédiaire.'],
+    ["L'huile moteur",'ci','Achetée et utilisée pendant l\'entretien : consommation intermédiaire.'],
+    ['Les connaissances en électronique automobile','tech','Connaissances techniques : technologie.'],
+  ]},
+  { titre:'Un hôpital public', contexte:'Un hôpital soigne des patients.', items:[
+    ['Les infirmières et les médecins','travail','Activité humaine rémunérée : travail.'],
+    ['Le scanner','capital','Machine utilisée pendant des années : capital fixe.'],
+    ['Les lits','capital','Équipements durables : capital fixe.'],
+    ['Les médicaments','ci','Achetés et consommés pendant les soins : consommation intermédiaire.'],
+    ['Les compresses et les gants à usage unique','ci','Détruits en une seule utilisation : consommation intermédiaire.'],
+    ["Les connaissances en imagerie médicale",'tech','Connaissances scientifiques (physique, médecine) : technologie.'],
+  ]},
+  { titre:'Un lycée', contexte:'Un lycée public assure l\'enseignement de ses élèves.', items:[
+    ['Les professeurs','travail','Activité humaine rémunérée : travail.'],
+    ['Les agents d\'entretien','travail','Activité humaine rémunérée : travail.'],
+    ['Les bâtiments','capital','Utilisés pendant des décennies : capital fixe.'],
+    ['Les vidéoprojecteurs','capital','Équipements durables : capital fixe.'],
+    ['Le papier des photocopies','ci','Acheté et consommé : consommation intermédiaire.'],
+    ["L'électricité et le chauffage",'ci','Consommés pendant l\'année : consommations intermédiaires.'],
+  ]},
+  { titre:'Une usine automobile', contexte:'Un constructeur assemble des voitures dans son usine.', items:[
+    ['Les ouvriers de la chaîne','travail','Activité humaine rémunérée : travail.'],
+    ['Les ingénieurs du bureau d\'études','travail','Activité humaine rémunérée, intellectuelle : travail.'],
+    ['Les robots de soudure','capital','Machines durables : capital fixe.'],
+    ["Les tôles d'acier",'ci','Achetées et transformées en carrosseries : consommation intermédiaire.'],
+    ['Les pneus achetés à un fournisseur','ci','Incorporés à la voiture : consommation intermédiaire.'],
+    ['Les connaissances en robotique','tech','Connaissances scientifiques et techniques : technologie.'],
+  ]},
+  { titre:'Une usine de smartphones', contexte:'Une usine assemble des smartphones.', items:[
+    ['Les ouvriers d\'assemblage','travail','Activité humaine rémunérée : travail.'],
+    ['La chaîne de montage','capital','Équipement durable : capital fixe.'],
+    ['Les écrans achetés à un fournisseur','ci','Incorporés au téléphone : consommation intermédiaire.'],
+    ['Les puces électroniques','ci','Incorporées au téléphone : consommation intermédiaire.'],
+    ["Les techniques de miniaturisation des composants électroniques",'tech','Connaissances scientifiques et techniques : technologie.'],
+  ]},
+  { titre:'Une imprimerie', contexte:'Une imprimerie imprime des livres et des affiches.', items:[
+    ["L'imprimeur",'travail','Activité humaine rémunérée : travail.'],
+    ['La presse à imprimer','capital','Machine durable : capital fixe.'],
+    ['Le papier','ci','Acheté et transformé en livres : consommation intermédiaire.'],
+    ["L'encre",'ci','Achetée et incorporée au produit : consommation intermédiaire.'],
+    ["Les procédés d'impression numérique",'tech','Connaissances techniques : technologie.'],
+  ]},
+  { titre:'Un chantier de construction', contexte:'Une entreprise du bâtiment construit une maison.', items:[
+    ['Les maçons','travail','Activité humaine rémunérée : travail.'],
+    ['La grue','capital','Machine utilisée sur de nombreux chantiers : capital fixe.'],
+    ['Le béton','ci','Acheté et incorporé à la maison : consommation intermédiaire.'],
+    ['Les briques','ci','Achetées et incorporées à la maison : consommation intermédiaire.'],
+    ["Les techniques d'isolation thermique",'tech','Connaissances scientifiques et techniques : technologie.'],
+  ]},
+  { titre:'Une station de ski', contexte:'Une station exploite des remontées mécaniques.', items:[
+    ['Les conducteurs de remontées mécaniques','travail','Activité humaine rémunérée : travail.'],
+    ['Les télésièges','capital','Équipements durables : capital fixe.'],
+    ["L'électricité des remontées",'ci','Achetée et consommée : consommation intermédiaire.'],
+    ['La neige tombée naturellement','rn','Fournie par la nature : ressource naturelle.'],
+    ['Les techniques de fabrication de neige de culture','tech','Connaissances techniques : technologie.'],
+  ]},
+  { titre:'Une compagnie aérienne', contexte:'Une compagnie transporte des passagers en avion.', items:[
+    ['Les pilotes','travail','Activité humaine rémunérée : travail.'],
+    ['Les hôtesses et stewards','travail','Activité humaine rémunérée : travail.'],
+    ['Les avions','capital','Utilisés pendant des décennies : capital fixe.'],
+    ['Le kérosène','ci','Détruit pendant le vol : consommation intermédiaire.'],
+    ['Les repas servis à bord, achetés à un traiteur','ci','Achetés à un autre producteur : consommation intermédiaire.'],
+    ['Les connaissances qui permettent la navigation par satellite','tech','Connaissances scientifiques et techniques : technologie.'],
+  ]},
+  { titre:'Un studio de jeux vidéo', contexte:'Un studio développe un jeu vidéo.', items:[
+    ['Les concepteurs et les programmeurs','travail','Activité humaine rémunérée, intellectuelle : travail.'],
+    ['Les ordinateurs','capital','Équipements durables : capital fixe.'],
+    ['Les abonnements annuels aux logiciels de 3D','ci','Services achetés pour produire : consommation intermédiaire.'],
+    ["L'électricité",'ci','Consommée pendant la production : consommation intermédiaire.'],
+    ['Les connaissances en programmation 3D','tech','Connaissances scientifiques et techniques : technologie.'],
+  ]},
+  { titre:'Une agence bancaire', contexte:'Une banque accueille ses clients dans une agence.', items:[
+    ['Les conseillers','travail','Activité humaine rémunérée : travail.'],
+    ['Les distributeurs automatiques de billets','capital','Équipements durables : capital fixe.'],
+    ['Le papier et les fournitures de bureau','ci','Achetés et consommés : consommations intermédiaires.'],
+    ["L'électricité de l'agence",'ci','Consommée pendant la production : consommation intermédiaire.'],
+    ['Les techniques mathématiques de chiffrement des données','tech','Connaissances scientifiques et techniques : technologie.'],
+  ]},
+  { titre:'Une salle de cinéma', contexte:'Un cinéma projette des films.', items:[
+    ['Le projectionniste et les agents d\'accueil','travail','Activité humaine rémunérée : travail.'],
+    ['Le projecteur numérique','capital','Équipement durable : capital fixe.'],
+    ['Les fauteuils de la salle','capital','Équipements durables : capital fixe.'],
+    ['La location des films aux distributeurs','ci','Service acheté pour produire : consommation intermédiaire.'],
+    ["L'électricité",'ci','Consommée pendant les séances : consommation intermédiaire.'],
+    ['Les connaissances en acoustique','tech','Connaissances scientifiques : technologie.'],
+  ]},
+  { titre:'Un chauffeur de taxi', contexte:'Un chauffeur indépendant transporte des clients.', items:[
+    ['Le chauffeur','travail','Activité humaine rémunérée : travail.'],
+    ['La voiture','capital','Utilisée pendant plusieurs années : capital fixe.'],
+    ['Le carburant','ci','Détruit pendant les trajets : consommation intermédiaire.'],
+    ["L'entretien chez le garagiste",'ci','Service acheté : consommation intermédiaire.'],
+    ['Les techniques de guidage par satellite','tech','Connaissances scientifiques et techniques : technologie.'],
+  ]},
+  { titre:'Un laboratoire pharmaceutique', contexte:'Un laboratoire met au point et fabrique des médicaments.', items:[
+    ['Les chercheurs','travail','Activité humaine rémunérée, intellectuelle : travail.'],
+    ['Les équipements de laboratoire','capital','Équipements durables : capital fixe.'],
+    ['Les produits chimiques','ci','Achetés et transformés en médicaments : consommation intermédiaire.'],
+    ['Les emballages','ci','Achetés et incorporés au produit : consommation intermédiaire.'],
+    ['Les connaissances en biotechnologies','tech','Connaissances scientifiques : technologie.'],
+  ]},
+  { titre:'Un maraîcher bio', contexte:'Un maraîcher cultive des légumes vendus en circuit court.', items:[
+    ['Le maraîcher','travail','Activité humaine rémunérée : travail.'],
+    ['La serre','capital','Construction durable : capital fixe.'],
+    ['Le motoculteur','capital','Machine durable : capital fixe.'],
+    ['Les graines achetées','ci','Achetées et transformées en légumes : consommation intermédiaire.'],
+    ['Le sol','rn','Fourni par la nature : ressource naturelle.'],
+    ["L'eau de pluie récupérée",'rn','Fournie par la nature : ressource naturelle.'],
+  ]},
+  { titre:'Une mine de lithium', contexte:'Une entreprise extrait du lithium pour les batteries.', items:[
+    ['Les mineurs','travail','Activité humaine rémunérée : travail.'],
+    ['Les engins d\'extraction','capital','Machines durables : capital fixe.'],
+    ['Les produits chimiques de traitement du minerai','ci','Achetés et consommés : consommation intermédiaire.'],
+    ['Le gisement de lithium','rn','Fourni par la nature : ressource naturelle non renouvelable.'],
+    ["Les procédés d'extraction du lithium",'tech','Connaissances scientifiques et techniques : technologie.'],
+  ]},
+];
+const NB_COURS = SCENARIOS.length;
+SCENARIOS.push(...EXTRA);
+
+let cur = 0, items = [], sel = null, vu = false, verifie = false;
+const reussis = new Set(), vus = new Set(), essayees = new Set();
+const $ = id => document.getElementById(id);
+
+function melanger(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function charger(i) {
+  cur = i; vu = vus.has(i); verifie = false; sel = null;
+  const s = SCENARIOS[i];
+  const autre = $('autre'); autre.hidden = i < NB_COURS; $('choix').value = i < NB_COURS ? i : 'autre';
+  $('titre').textContent = s.titre; $('contexte').textContent = s.contexte;
+  items = melanger(s.items).map((it, k) => ({ k, texte:it[0], rep:it[1], just:it[2], place:null, ok:false }));
+  $('msg').className = 'msg'; $('correction').style.display = 'none'; $('voir').disabled = false;
+  rendre();
+}
+
+function chip(it) {
+  const d = document.createElement('div');
+  d.className = 'chip' + (it.ok ? ' ok' : '') + (it.faux ? ' faux' : '') + (sel === it.k ? ' sel' : '');
+  d.textContent = it.texte; d.dataset.k = it.k;
+  if (!it.ok) {
+    d.draggable = true;
+    d.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', it.k); sel = it.k; });
+    d.addEventListener('click', e => { e.stopPropagation(); sel = (sel === it.k) ? null : it.k; rendre(); });
+  }
+  return d;
+}
+
+function deposer(k, place) {
+  const it = items.find(x => x.k === +k); if (!it || it.ok) return;
+  it.place = place; it.faux = false; sel = null; rendre();
+}
+
+function zoneEvents(el, place) {
+  el.addEventListener('dragover', e => { e.preventDefault(); el.closest('.col, .pool').classList.add('cible'); });
+  el.addEventListener('dragleave', () => el.closest('.col, .pool').classList.remove('cible'));
+  el.addEventListener('drop', e => { e.preventDefault(); el.closest('.col, .pool').classList.remove('cible'); deposer(e.dataTransfer.getData('text/plain'), place); });
+  el.addEventListener('click', () => { if (sel !== null) deposer(sel, place); });
+}
+
+function rendre() {
+  const pool = $('pool'); pool.innerHTML = '';
+  items.filter(it => it.place === null).forEach(it => pool.appendChild(chip(it)));
+  pool.classList.toggle('vide', !pool.children.length);
+  const cols = $('cols'); cols.innerHTML = '';
+  COLS.forEach(c => {
+    const col = document.createElement('div'); col.className = 'col' + '';
+    const h = document.createElement('h3'); h.textContent = c.nom; col.appendChild(h);
+    const z = document.createElement('div'); z.className = 'zone';
+    items.filter(it => it.place === c.id).forEach(it => z.appendChild(chip(it)));
+    zoneEvents(z, c.id); col.appendChild(z); cols.appendChild(col);
+  });
+  majScore();
+}
+
+function verifier() {
+  const restants = items.filter(it => it.place === null).length;
+  if (restants) { message('info', `Il reste ${restants} étiquette${restants > 1 ? 's' : ''} à placer.`); return; }
+  let faux = 0;
+  items.forEach(it => { if (it.place === it.rep) { it.ok = true; it.faux = false; } else { it.faux = true; faux++; } });
+  verifie = true; essayees.add(cur);
+  if (!faux) {
+    if (!vu) { reussis.add(cur); message('bravo', 'Bravo, tout est juste ! Ouvre la correction pour relire les justifications, ou tire une autre production au hasard.'); }
+    else message('info', 'Tout est juste, mais la correction a été consultée : cette production ne compte pas dans le score.');
+  } else {
+    message('info', `${faux} étiquette${faux > 1 ? 's sont' : ' est'} mal placée${faux > 1 ? 's' : ''} (en rouge). Déplace-${faux > 1 ? 'les' : 'la'} puis vérifie à nouveau. Les étiquettes en vert sont bloquées.`);
+  }
+  rendre();
+}
+
+function voir() {
+  vu = true; vus.add(cur);
+  const ul = $('liste'); ul.innerHTML = '';
+  SCENARIOS[cur].items.forEach(([t, r, j]) => {
+    const li = document.createElement('li'); li.innerHTML = `<b>${t}</b> &rarr; ${NOMS[r]}. ${j}`; ul.appendChild(li);
+  });
+  $('correction').style.display = 'block'; $('voir').disabled = true; majScore();
+}
+
+function message(type, txt) { const m = $('msg'); m.className = 'msg ' + type; m.textContent = txt; }
+function majScore() { const n = new Set([...essayees, ...vus]).size; $('score').textContent = `Réussies sans correction : ${reussis.size} sur ${n} production${n > 1 ? 's' : ''} essayée${n > 1 ? 's' : ''}`; }
+
+SCENARIOS.slice(0, NB_COURS).forEach((s, i) => { const o = document.createElement('option'); o.value = i; o.textContent = s.titre; $('choix').appendChild(o); });
+{ const o = document.createElement('option'); o.value = 'autre'; o.id = 'autre'; o.textContent = 'Production tirée au hasard'; o.disabled = true; o.hidden = true; $('choix').appendChild(o); }
+zoneEvents($('pool'), null);
+$('choix').addEventListener('change', e => charger(+e.target.value));
+const deja = new Set([0]);
+function auHasard() {
+  let pool = SCENARIOS.map((_, i) => i).filter(i => !deja.has(i));
+  if (!pool.length) { deja.clear(); deja.add(cur); pool = SCENARIOS.map((_, i) => i).filter(i => i !== cur); }
+  const i = pool[Math.floor(Math.random() * pool.length)]; deja.add(i); charger(i);
+}
+$('hasard').addEventListener('click', auHasard);
+$('verifier').addEventListener('click', verifier);
+$('voir').addEventListener('click', voir);
+$('reset').addEventListener('click', () => charger(cur));
+charger(0);
+</script>
+</body>
+</html>
