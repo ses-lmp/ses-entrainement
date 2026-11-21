@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Affaiblissement ou persistance des classes sociales ?</title>
+<meta name="chapitre" content="Chapitre 2 : Comment est structurée la société française actuelle ?">
+<meta name="description" content="Classer chaque argument du débat : affaiblissement ou persistance des classes sociales dans la France actuelle.">
+<style>
+  :root{--vert:#548235;--vertcl:#E2EFDA;--rouge:#C00000;--rougecl:#FBE4E2;--gris:#F2F2F2;--bord:#D0D0D0;--jaune:#FFF2CC;--bleufonce:#1F4E79;--bleu:#2E75B6;--def:#DDEBF7;}
+  *{box-sizing:border-box}
+  body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#fafbfc;color:#1a1a1a;line-height:1.5}
+  .wrap{max-width:980px;margin:0 auto;padding:16px 16px 60px}
+  .retour{display:inline-block;margin-bottom:8px;color:var(--bleu);text-decoration:none;font-size:.95rem}
+  h1{font-size:1.35rem;color:var(--bleufonce);margin:.2em 0}
+  .sub{color:#555;font-size:.95rem;margin:0 0 12px}
+  .oa{background:var(--def);border-left:5px solid var(--bleufonce);padding:8px 12px;margin:0 0 12px;font-size:.9rem}
+  .consigne{background:var(--jaune);border-radius:10px;padding:12px 16px;font-size:.94rem;margin-bottom:16px}
+  .pool{display:flex;flex-wrap:wrap;gap:8px;padding:12px;background:var(--gris);border-radius:12px;min-height:56px;margin-bottom:18px}
+  .pool.empty::before{content:"Tout a été classé.";color:#888;font-style:italic;font-size:.85rem}
+  .chip{border:1.5px solid var(--bord);background:#fff;border-radius:10px;padding:8px 12px;font-size:.88rem;cursor:pointer;user-select:none;max-width:100%}
+  .chip:hover{border-color:var(--bleufonce)}
+  .chip.sel{border-color:var(--bleufonce);box-shadow:0 0 0 2px rgba(31,78,121,.3);background:#eef4fb}
+  .chip.correct{border:2px solid var(--vert);background:var(--vertcl);cursor:default}
+  .chip.wrong{border:2px dashed var(--rouge);background:var(--rougecl)}
+  .chip .marque{font-weight:bold;margin-right:4px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:640px){.cols{grid-template-columns:1fr}}
+  .col{border:2px solid var(--bord);border-radius:12px;overflow:hidden;background:#fff;min-height:120px}
+  .col h2{margin:0;padding:10px 14px;font-size:1rem;color:#fff;line-height:1.25}
+  .zone{padding:12px;display:flex;flex-direction:column;gap:8px;min-height:80px;cursor:pointer}
+  .zone.over{background:#f3f8ff}
+  .feed{display:block;font-size:.82rem;margin-top:4px;color:#333}
+  .bar{display:flex;gap:10px;align-items:center;margin:22px 0 0;flex-wrap:wrap}
+  button.action{border:none;border-radius:10px;padding:11px 20px;font-size:.95rem;font-weight:bold;cursor:pointer;font-family:inherit}
+  .valider{background:var(--vert);color:#fff}
+  .voir{background:#fff;color:var(--bleufonce);border:2px solid var(--bleu)!important}
+  .reset{background:#fff;color:#444;border:1.5px solid var(--bord)!important}
+  .cache{display:none!important}
+  .msg{margin-top:12px;padding:10px 14px;border-radius:8px;font-size:.95rem}
+  .msg.info{background:var(--jaune);border:1px solid #BF8F00}
+  .msg.bravo{background:var(--vertcl);border:1px solid var(--vert)}
+  .msg:empty{display:none}
+  footer{margin-top:26px;font-size:.78rem;color:#888}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="retour" href="../../index.html">&larr; Tous les exercices</a>
+  <h1>Affaiblissement ou persistance des classes sociales ?</h1>
+  <p class="sub">Classe chaque argument du débat dans la bonne colonne.</p>
+  <div class="oa">Objectif d'apprentissage : Comprendre que la pertinence d'une approche en termes de classes sociales pour rendre compte de la société française fait l'objet de débats théoriques et statistiques : évolution des distances inter- et intra-classes, articulation avec les rapports sociaux de genre, identifications subjectives à un groupe social, multiplication des facteurs d'individualisation.</div>
+  <div class="consigne">
+    Consigne. Touche un élément pour le sélectionner, puis touche la colonne qui convient (sur ordinateur, tu peux aussi le faire glisser).
+    Touche un élément déjà classé pour le renvoyer en haut. Clique ensuite sur Valider : les erreurs s'affichent, tu peux les corriger avant de consulter la correction.
+  </div>
+
+  <div class="pool" id="pool"></div>
+  <div class="cols" id="cols"></div>
+
+  <div class="bar">
+    <button class="action valider" id="valider" type="button">Valider</button>
+    <button class="action voir cache" id="voir" type="button">Voir la correction</button>
+    <button class="action reset" id="reset" type="button">Recommencer</button>
+  </div>
+  <div class="msg" id="msg"></div>
+
+  <footer>Exercice auto-corrigé : aucune donnée n'est enregistrée.</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var COLS = [["aff", "Arguments pour l'affaiblissement des classes", "#C55A11"], ["per", "Arguments pour la persistance des classes", "#548235"]];
+var ITEMS = [["La réduction des distances inter-classes (revenus, équipements, modes de vie)", "aff", "Rapprochement des conditions d'existence : moyennisation."], ["La constitution d'une vaste classe moyenne (toupie de Mendras)", "aff", "La constellation centrale absorbe les groupes voisins (Mendras)."], ["L'augmentation des distances intra-classes (ex. les employés)", "aff", "L'hétérogénéité interne brouille l'idée de classes homogènes."], ["L'individualisation du travail (plateformes, emploi non salarié)", "aff", "Autonomie et disparition des collectifs de travail."], ["Les rémunérations individualisées (primes, augmentations)", "aff", "Elles dissolvent le collectif de travail au profit du « je »."], ["Le recul de la syndicalisation (environ 30 % en 1950, 10,3 % en 2019)", "aff", "Moins d'appartenance collective et de représentation."], ["Un sentiment d'appartenance à la « classe moyenne » très interclassiste", "aff", "78 % des CSP+, mais aussi 51 % des catégories populaires se rangent dans les « classes moyennes » (Fondation Jean-Jaurès, 2023)."], ["La persistance d'« univers de vie disjoints »", "per", "Des mondes sociaux qui ne se croisent pas."], ["Des pratiques culturelles qui restent clivées (musées, opéra, lecture)", "per", "Les pratiques varient fortement selon la classe sociale."], ["Les inégalités de genre s'ajoutent aux inégalités de classe, sans les effacer", "per", "Les rapports de genre s'articulent aux rapports de classe : ils ne les remplacent pas."], ["Une femme cadre gagne moins qu'un homme cadre, mais plus qu'une femme ouvrière", "per", "Le genre ne remplace pas la classe : il s'y articule."], ["La haute bourgeoisie reste une classe « pour soi » mobilisée (Pinçon-Charlot)", "per", "Consciente de ses intérêts et capable d'action collective."], ["La repolarisation du sentiment d'appartenance depuis les années 2010", "per", "Après des décennies d'identification à la « classe moyenne », le clivage se ravive."]].map(function(x, i){ return {id: "i" + i, t: x[0], rep: x[1], j: x[2]}; });
+var NOM = {}; COLS.forEach(function(c){ NOM[c[0]] = c[1]; });
+var loc, etat, selected, vu, order;
+
+function shuffle(a){ for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
+function $(id){ return document.getElementById(id); }
+function message(type, txt){ var m = $("msg"); m.className = "msg " + type; m.textContent = txt; }
+
+// colonnes
+var zones = {};
+COLS.forEach(function(c){
+  var col = document.createElement("div"); col.className = "col";
+  var h = document.createElement("h2"); h.textContent = c[1]; h.style.background = c[2]; col.appendChild(h);
+  var z = document.createElement("div"); z.className = "zone"; zones[c[0]] = z; col.appendChild(z);
+  z.addEventListener("dragover", function(e){ e.preventDefault(); z.classList.add("over"); });
+  z.addEventListener("dragleave", function(){ z.classList.remove("over"); });
+  z.addEventListener("drop", function(e){ e.preventDefault(); z.classList.remove("over"); place(e.dataTransfer.getData("text/plain"), c[0]); });
+  z.addEventListener("click", function(){ if (selected) place(selected, c[0]); else message("info", "Choisis d'abord un élément en haut."); });
+  $("cols").appendChild(col);
+});
+
+function demarrer(){
+  loc = {}; etat = {}; selected = null; vu = false;
+  ITEMS.forEach(function(it){ loc[it.id] = "pool"; });
+  order = shuffle(ITEMS.map(function(i){ return i.id; }));
+  $("voir").classList.add("cache"); message("", "");
+  render();
+}
+function place(id, col){ if (!id || etat[id] === "ok") return; loc[id] = col; etat[id] = null; selected = null; render(); }
+
+function makeChip(it){
+  var c = document.createElement("div");
+  c.className = "chip" + (etat[it.id] === "ok" ? " correct" : "") + (etat[it.id] === "ko" ? " wrong" : "") + (selected === it.id ? " sel" : "");
+  var marque = etat[it.id] === "ok" ? "&#10003;" : (etat[it.id] === "ko" ? "&#10007;" : "");
+  c.innerHTML = (marque ? '<span class="marque">' + marque + '</span>' : "") + "<span></span>";
+  c.lastChild.textContent = it.t;
+  if (vu && loc[it.id] !== "pool") {
+    var f = document.createElement("span"); f.className = "feed";
+    f.textContent = (etat[it.id] === "ok" ? "" : "Réponse : " + NOM[it.rep] + ". ") + it.j;
+    c.appendChild(f);
+  }
+  if (etat[it.id] !== "ok") {
+    c.draggable = true;
+    c.addEventListener("dragstart", function(e){ e.dataTransfer.setData("text/plain", it.id); });
+    c.addEventListener("click", function(e){
+      e.stopPropagation();
+      if (loc[it.id] !== "pool") { loc[it.id] = "pool"; etat[it.id] = null; selected = null; render(); return; }
+      selected = (selected === it.id) ? null : it.id; render();
+    });
+  }
+  return c;
+}
+
+function render(){
+  var pool = $("pool"); pool.innerHTML = "";
+  Object.keys(zones).forEach(function(k){ zones[k].innerHTML = ""; });
+  order.forEach(function(id){
+    var it = ITEMS.filter(function(x){ return x.id === id; })[0];
+    (loc[id] === "pool" ? pool : zones[loc[id]]).appendChild(makeChip(it));
+  });
+  pool.classList.toggle("empty", order.every(function(id){ return loc[id] !== "pool"; }));
+}
+
+$("valider").addEventListener("click", function(){
+  var restants = ITEMS.filter(function(it){ return loc[it.id] === "pool"; }).length;
+  if (restants) { message("info", "Il reste " + restants + " élément" + (restants > 1 ? "s" : "") + " à classer."); return; }
+  var faux = 0;
+  ITEMS.forEach(function(it){ var ok = loc[it.id] === it.rep; etat[it.id] = ok ? "ok" : "ko"; if (!ok) faux++; });
+  selected = null; render();
+  if (!faux) message(vu ? "info" : "bravo", vu ? "Tout est juste, mais après avoir consulté la correction." : "Bravo, tout est juste ! Clique sur « Voir la correction » pour relire les justifications.");
+  else message("info", (ITEMS.length - faux) + " sur " + ITEMS.length + " sont bien classés. " + faux + " élément" + (faux > 1 ? "s sont mal classés (en rouge) : touche-les pour les renvoyer en haut" : " est mal classé (en rouge) : touche-le pour le renvoyer en haut") + ", reclasse puis valide à nouveau. Ou consulte la correction.");
+  $("voir").classList.remove("cache");
+});
+$("voir").addEventListener("click", function(){
+  vu = true;
+  ITEMS.forEach(function(it){ if (loc[it.id] !== "pool") etat[it.id] = loc[it.id] === it.rep ? "ok" : "ko"; });
+  render(); $("voir").classList.add("cache");
+  message("info", "Correction affichée sous chaque élément. Clique sur « Recommencer » pour refaire l'exercice dans un nouvel ordre.");
+});
+$("reset").addEventListener("click", demarrer);
+
+window.__exo = {ITEMS: ITEMS, place: place, loc: function(){ return loc; }};
+demarrer();
+})();
+</script>
+</body>
+</html>
